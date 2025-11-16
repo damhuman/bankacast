@@ -1,12 +1,25 @@
 import { NextRequest } from 'next/server';
 import { ImageResponse } from 'next/og';
+import QRCode from 'qrcode-svg';
 
 export const runtime = 'edge';
 
-// Generate QR code data URL for vault address
+// Generate inline SVG QR code as data URL for vault address
 function generateQRCodeDataURL(vaultAddress: string): string {
-  // Using a simple QR code API service that works in Edge runtime
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vaultAddress)}&margin=10`;
+  const qr = new QRCode({
+    content: vaultAddress,
+    padding: 1,
+    width: 120,
+    height: 120,
+    color: '#000000',
+    background: '#ffffff',
+    ecl: 'M',
+    join: true, // Use single path for compactness
+  });
+  const svgString = qr.svg();
+  // Convert SVG to data URL
+  const base64 = Buffer.from(svgString).toString('base64');
+  return `data:image/svg+xml;base64,${base64}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -17,7 +30,7 @@ export async function GET(req: NextRequest) {
     return new Response('Missing vault address', { status: 400 });
   }
 
-  const qrCodeUrl = generateQRCodeDataURL(vaultAddress);
+  const qrCodeDataURL = generateQRCodeDataURL(vaultAddress);
 
   // Fetch vault data
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
@@ -297,7 +310,7 @@ export async function GET(req: NextRequest) {
             }}
           >
             <img
-              src={qrCodeUrl}
+              src={qrCodeDataURL}
               width="120"
               height="120"
               alt="Vault QR"
