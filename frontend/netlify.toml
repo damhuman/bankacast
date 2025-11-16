@@ -1,12 +1,13 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
+  base = "frontend"
+  command = "npm run build"
   publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
-  NEXT_PRIVATE_TARGET = "server"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [functions]
   directory = ".netlify/functions"
