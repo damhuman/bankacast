@@ -30,12 +30,10 @@ export default function CreateVaultPage() {
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [vaultAddress, setVaultAddress] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check if wallet is connected
@@ -44,9 +42,7 @@ export default function CreateVaultPage() {
       return;
     }
 
-    setLoading(true);
     setError('');
-    setSuccess('');
 
     try {
       // Convert goal amount to USDC wei (6 decimals)
@@ -65,13 +61,9 @@ export default function CreateVaultPage() {
         chainId: CHAIN_ID,
       });
 
-      setSuccess('Transaction submitted! Check your wallet...');
-
     } catch (err: any) {
       console.error('Vault creation error:', err);
       setError(err.message || err.shortMessage || 'Failed to create vault');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -95,20 +87,10 @@ export default function CreateVaultPage() {
           </div>
         )}
 
-        {success && (
+        {hash && (
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-6">
-            <p className="font-semibold">{success}</p>
-            {vaultAddress && (
-              <div className="mt-2">
-                <p className="text-sm">Vault address: {vaultAddress}</p>
-                <Link
-                  href={`/vault/${vaultAddress}`}
-                  className="text-sm text-green-700 hover:underline"
-                >
-                  View vault →
-                </Link>
-              </div>
-            )}
+            <p className="font-semibold">Transaction submitted!</p>
+            <p className="text-sm mt-1">Hash: {hash}</p>
           </div>
         )}
 
@@ -164,10 +146,10 @@ export default function CreateVaultPage() {
           ) : (
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="w-full bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Vault...' : 'Create Vault'}
+              {isPending ? 'Waiting for signature...' : 'Create Vault'}
             </button>
           )}
 
