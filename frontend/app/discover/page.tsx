@@ -187,16 +187,6 @@ export default function DiscoverPage() {
             })}
           </div>
         )}
-
-        <div className="mt-12 bg-blue-50 border-l-4 border-primary p-6 rounded">
-          <h3 className="font-semibold mb-2">💡 How to contribute:</h3>
-          <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-            <li>Click "View Details" on any vault</li>
-            <li>Copy the Frame URL or share directly to Farcaster</li>
-            <li>Contribute via the interactive Frame</li>
-            <li>Or connect your wallet and contribute directly</li>
-          </ol>
-        </div>
       </div>
     </main>
   );
