@@ -9,7 +9,6 @@ const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
 export default function CreateVaultPage() {
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
-  const [deadline, setDeadline] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -25,8 +24,9 @@ export default function CreateVaultPage() {
       // Convert goal amount to USDC wei (6 decimals)
       const goalAmountWei = BigInt(Number(goalAmount) * 1e6).toString();
 
-      // Convert deadline to Unix timestamp
-      const deadlineTimestamp = Math.floor(new Date(deadline).getTime() / 1000);
+      // Set deadline to 100 years from now (effectively no deadline)
+      const hundredYearsInSeconds = 100 * 365 * 24 * 60 * 60;
+      const deadlineTimestamp = Math.floor(Date.now() / 1000) + hundredYearsInSeconds;
 
       // For now, we'll just show the transaction parameters
       // In production, this would use wagmi/viem to call the contract
@@ -60,8 +60,6 @@ export default function CreateVaultPage() {
       setLoading(false);
     }
   };
-
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <main className="min-h-screen p-8">
@@ -134,31 +132,14 @@ export default function CreateVaultPage() {
             </p>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Deadline
-            </label>
-            <input
-              type="date"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              required
-              min={today}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              When do you want to reach your goal?
-            </p>
-          </div>
-
           <div className="bg-blue-50 border-l-4 border-primary p-4 mb-6">
             <h3 className="font-semibold mb-2">How it works:</h3>
             <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-              <li>Create your vault with a goal and deadline</li>
+              <li>Create your vault with a savings goal</li>
               <li>Share the vault link on Farcaster</li>
               <li>Friends contribute USDC directly</li>
               <li>Funds auto-generate yield via Aave V3</li>
-              <li>Withdraw when goal is reached or deadline passes</li>
+              <li>Withdraw when goal is reached</li>
             </ol>
           </div>
 
@@ -171,7 +152,7 @@ export default function CreateVaultPage() {
           </button>
 
           <p className="text-xs text-gray-500 mt-4 text-center">
-            By creating a vault, you agree that funds will be locked until the deadline or goal is reached
+            By creating a vault, you agree that funds will be locked until the goal is reached
           </p>
         </form>
 
