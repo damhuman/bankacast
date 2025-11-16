@@ -5,15 +5,27 @@ import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
+interface Contributor {
+  address: string;
+  amount: number;
+  farcaster_username: string | null;
+}
+
 interface Vault {
   address: string;
   creator: string;
   goal_amount: number;
-  total_contributed: number;
   deadline: number;
-  metadata_uri: string;
-  withdrawn: boolean;
-  contributors_count: number;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  total_contributed: number;
+  current_balance: number;
+  yield_earned: number;
+  progress: number;
+  contributors: Contributor[];
+  status: string;
+  created_at: string | null;
 }
 
 export default function DiscoverPage() {
@@ -44,14 +56,6 @@ export default function DiscoverPage() {
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString();
-  };
-
-  const getProgress = (contributed: number, goal: number) => {
-    return Math.min((contributed / goal) * 100, 100);
-  };
-
-  const getTitle = (metadataUri: string) => {
-    return metadataUri.replace('db://', '') || 'Untitled Vault';
   };
 
   const isExpired = (deadline: number) => {
@@ -103,7 +107,6 @@ export default function DiscoverPage() {
         {!loading && !error && vaults.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {vaults.map((vault) => {
-              const progress = getProgress(vault.total_contributed, vault.goal_amount);
               const expired = isExpired(vault.deadline);
               const goalReached = vault.total_contributed >= vault.goal_amount;
 
@@ -113,7 +116,7 @@ export default function DiscoverPage() {
                   className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition"
                 >
                   <div className="mb-4">
-                    <h3 className="text-xl font-bold mb-1">{getTitle(vault.metadata_uri)}</h3>
+                    <h3 className="text-xl font-bold mb-1">{vault.title}</h3>
                     <p className="text-xs text-gray-500 truncate">
                       {vault.address}
                     </p>
@@ -122,12 +125,12 @@ export default function DiscoverPage() {
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600">Progress</span>
-                      <span className="font-semibold">{progress.toFixed(1)}%</span>
+                      <span className="font-semibold">{vault.progress.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
+                        style={{ width: `${vault.progress}%` }}
                       />
                     </div>
                   </div>
@@ -141,7 +144,7 @@ export default function DiscoverPage() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Contributors</span>
-                      <span className="font-semibold">{vault.contributors_count}</span>
+                      <span className="font-semibold">{vault.contributors.length}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Deadline</span>
@@ -163,12 +166,6 @@ export default function DiscoverPage() {
                     </div>
                   )}
 
-                  {vault.withdrawn && (
-                    <div className="bg-gray-100 text-gray-600 text-sm px-3 py-2 rounded mb-3">
-                      💰 Withdrawn
-                    </div>
-                  )}
-
                   <div className="flex gap-2">
                     <Link
                       href={`/vault/${vault.address}`}
@@ -176,7 +173,7 @@ export default function DiscoverPage() {
                     >
                       View Details
                     </Link>
-                    {!vault.withdrawn && !expired && !goalReached && (
+                    {!expired && !goalReached && (
                       <button
                         className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition"
                         onClick={() => alert('Connect wallet to contribute')}
