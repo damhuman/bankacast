@@ -8,6 +8,7 @@ import { parseUnits } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '84532');
 
 const FACTORY_ABI = [
   {
@@ -61,7 +62,7 @@ export default function CreateVaultPage() {
         abi: FACTORY_ABI,
         functionName: 'createVault',
         args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
-        chainId: 84532, // Base Sepolia
+        chainId: CHAIN_ID,
       });
 
       setSuccess('Transaction submitted! Check your wallet...');
