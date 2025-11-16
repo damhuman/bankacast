@@ -26,12 +26,10 @@ const FACTORY_ABI = [
 
 export default function CreateVaultPage() {
   const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
-  const [error, setError] = useState('');
-  const [vaultAddress, setVaultAddress] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,29 +40,29 @@ export default function CreateVaultPage() {
       return;
     }
 
-    setError('');
+    // Convert goal amount to USDC wei (6 decimals)
+    const goalAmountWei = parseUnits(goalAmount, 6);
 
-    try {
-      // Convert goal amount to USDC wei (6 decimals)
-      const goalAmountWei = parseUnits(goalAmount, 6);
+    // Set deadline to 100 years from now (effectively no deadline)
+    const hundredYearsInSeconds = BigInt(100 * 365 * 24 * 60 * 60);
+    const deadlineTimestamp = BigInt(Math.floor(Date.now() / 1000)) + hundredYearsInSeconds;
 
-      // Set deadline to 100 years from now (effectively no deadline)
-      const hundredYearsInSeconds = BigInt(100 * 365 * 24 * 60 * 60);
-      const deadlineTimestamp = BigInt(Math.floor(Date.now() / 1000)) + hundredYearsInSeconds;
+    console.log('Creating vault with params:', {
+      address: FACTORY_ADDRESS,
+      goalAmountWei: goalAmountWei.toString(),
+      deadlineTimestamp: deadlineTimestamp.toString(),
+      metadataURI: `db://${title}`,
+      chainId: CHAIN_ID,
+    });
 
-      // Call createVault on the factory contract
-      writeContract({
-        address: FACTORY_ADDRESS,
-        abi: FACTORY_ABI,
-        functionName: 'createVault',
-        args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
-        chainId: CHAIN_ID,
-      });
-
-    } catch (err: any) {
-      console.error('Vault creation error:', err);
-      setError(err.message || err.shortMessage || 'Failed to create vault');
-    }
+    // Call createVault on the factory contract
+    writeContract({
+      address: FACTORY_ADDRESS,
+      abi: FACTORY_ABI,
+      functionName: 'createVault',
+      args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
+      chainId: CHAIN_ID,
+    });
   };
 
   return (
@@ -81,16 +79,25 @@ export default function CreateVaultPage() {
           Set your goal, deadline, and start saving together
         </p>
 
-        {error && (
+        {writeError && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
-            {error}
+            <p className="font-semibold">Error</p>
+            <p className="text-sm mt-1">{writeError.message || 'Transaction failed'}</p>
           </div>
         )}
 
         {hash && (
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-6">
             <p className="font-semibold">Transaction submitted!</p>
-            <p className="text-sm mt-1">Hash: {hash}</p>
+            <p className="text-sm mt-1 font-mono break-all">Hash: {hash}</p>
+            <a
+              href={`https://sepolia.basescan.org/tx/${hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-green-700 hover:underline mt-2 inline-block"
+            >
+              View on BaseScan →
+            </a>
           </div>
         )}
 
