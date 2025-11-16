@@ -47,7 +47,12 @@ export default function CreateVaultPage() {
 
   // Redirect to vault page after transaction is confirmed
   useEffect(() => {
+    console.log('Redirect effect triggered:', { isSuccess, hasReceipt: !!receipt });
+
     if (isSuccess && receipt) {
+      console.log('Transaction receipt:', receipt);
+      console.log('Receipt logs:', receipt.logs);
+
       // Get VaultCreated event from logs
       const vaultCreatedEvent = receipt.logs.find((log) => {
         try {
@@ -56,11 +61,15 @@ export default function CreateVaultPage() {
             data: log.data,
             topics: log.topics,
           });
+          console.log('Decoded event:', decoded);
           return decoded.eventName === 'VaultCreated';
-        } catch {
+        } catch (e) {
+          console.log('Failed to decode log:', e);
           return false;
         }
       });
+
+      console.log('VaultCreated event found:', vaultCreatedEvent);
 
       if (vaultCreatedEvent) {
         const decoded = decodeEventLog({
@@ -68,9 +77,13 @@ export default function CreateVaultPage() {
           data: vaultCreatedEvent.data,
           topics: vaultCreatedEvent.topics,
         });
+        console.log('Final decoded event:', decoded);
         // @ts-ignore
         const vaultAddress = decoded.args.vault;
+        console.log('Redirecting to vault:', vaultAddress);
         router.push(`/vault/${vaultAddress}`);
+      } else {
+        console.error('VaultCreated event not found in receipt logs');
       }
     }
   }, [isSuccess, receipt, router]);
