@@ -22,11 +22,11 @@ class Vault(Base):
     image_url = Column(String(500))
 
     # Current state
-    total_contributed = Column(BigInteger, default=0)
-    current_balance = Column(BigInteger, default=0)  # Principal + yield from Aave
-    yield_earned = Column(BigInteger, default=0)  # Yield earned from Aave
-    current_apy = Column(BigInteger, default=0)  # APY in basis points (500 = 5%)
-    status = Column(String(20), default="active", index=True)  # active, completed
+    total_contributed = Column(BigInteger, default=0, nullable=False)
+    current_balance = Column(BigInteger, default=0, nullable=False)  # Principal + yield from Aave
+    yield_earned = Column(BigInteger, default=0, nullable=False)  # Yield earned from Aave
+    current_apy = Column(BigInteger, default=0, nullable=False)  # APY in basis points (500 = 5%)
+    status = Column(String(20), default="active", nullable=False, index=True)  # active, completed
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
