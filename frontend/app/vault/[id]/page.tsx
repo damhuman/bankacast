@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
+
 export default function VaultPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const [copied, setCopied] = useState(false);
 
   // Use window.location.origin to get the current domain (works in prod and dev)
   const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
@@ -9,39 +13,64 @@ export default function VaultPage({ params }: { params: { id: string } }) {
   const frameUrl = `${APP_URL}/api/frame?vault=${id}`;
   const shareText = `Check out this savings vault on Banka!\n\n${frameUrl}`;
 
-  return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Vault Details</h1>
+  const handleCopy = () => {
+    navigator.clipboard.writeText(frameUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+  return (
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <Link
+            href="/"
+            className="text-gray-600 hover:text-gray-900 transition flex items-center gap-2 text-sm font-medium"
+          >
+            ← Back
+          </Link>
+        </div>
+
+        {/* Main Content */}
+        <div className="space-y-8">
+          {/* Title */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Share Your Vault</h1>
+            <p className="text-gray-600 text-sm">Copy the link or share directly to Farcaster</p>
+          </div>
+
+          {/* Vault Address */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
               Vault Address
             </label>
-            <code className="block p-3 bg-gray-100 rounded text-sm break-all">
-              {id}
-            </code>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <code className="text-xs text-gray-700 break-all font-mono">
+                {id}
+              </code>
+            </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Farcaster Frame URL
+          {/* Frame URL */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Frame URL
             </label>
-            <code className="block p-3 bg-gray-100 rounded text-sm break-all">
-              {frameUrl}
-            </code>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <code className="text-xs text-gray-700 break-all font-mono">
+                {frameUrl}
+              </code>
+            </div>
           </div>
 
-          <div className="flex gap-4">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(frameUrl);
-                alert('Frame URL copied!');
-              }}
-              className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition"
+              onClick={handleCopy}
+              className="flex-1 bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition text-sm"
             >
-              📋 Copy Frame URL
+              {copied ? 'Copied!' : 'Copy Link'}
             </button>
 
             <button
@@ -49,31 +78,32 @@ export default function VaultPage({ params }: { params: { id: string } }) {
                 const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
                 window.open(url, '_blank');
               }}
-              className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition"
+              className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition text-sm"
             >
-              🚀 Share on Farcaster
+              Share on Farcaster
             </button>
           </div>
-        </div>
 
-        <div className="bg-blue-50 border-l-4 border-primary p-6 rounded">
-          <h3 className="font-semibold text-lg mb-2">📝 How to share:</h3>
-          <ol className="list-decimal list-inside space-y-2 text-gray-700">
-            <li>Click "Share on Farcaster" button above</li>
-            <li>Or copy the Frame URL and paste it in a Warpcast cast</li>
-            <li>Your followers will see an interactive Frame with vault progress</li>
-            <li>They can contribute directly from the Frame!</li>
-          </ol>
-        </div>
+          {/* Info Box */}
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+            <p className="text-sm text-gray-700">
+              Share this link on Farcaster to let others contribute to your vault.
+              They'll see an interactive frame with progress and can contribute directly.
+            </p>
+          </div>
 
-        <div className="mt-8">
-          <h3 className="font-semibold text-lg mb-4">🎨 Frame Preview:</h3>
-          <div className="border-2 border-gray-200 rounded-lg p-4">
-            <iframe
-              src={frameUrl}
-              className="w-full h-96 border-0 rounded"
-              title="Frame Preview"
-            />
+          {/* Frame Preview */}
+          <div className="space-y-3">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Preview
+            </label>
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <iframe
+                src={frameUrl}
+                className="w-full h-96 border-0"
+                title="Frame Preview"
+              />
+            </div>
           </div>
         </div>
       </div>
