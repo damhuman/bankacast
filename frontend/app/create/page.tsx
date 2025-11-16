@@ -30,19 +30,21 @@ export default function CreateVaultPage() {
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
+  const [chainError, setChainError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setChainError('');
 
     // Check if wallet is connected
     if (!isConnected) {
-      alert('Please connect your wallet first');
+      setChainError('Please connect your wallet first');
       return;
     }
 
     // Check if on correct chain
     if (chain?.id !== CHAIN_ID) {
-      alert(`Please switch to Base Sepolia network (Chain ID: ${CHAIN_ID}). Current chain: ${chain?.id}`);
+      setChainError(`Wrong network! Please switch to Base Sepolia (Chain ID: ${CHAIN_ID}). Current: ${chain?.name || chain?.id || 'Unknown'}`);
       return;
     }
 
@@ -83,6 +85,13 @@ export default function CreateVaultPage() {
         <p className="text-gray-600 mb-8">
           Set your goal, deadline, and start saving together
         </p>
+
+        {chainError && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-6">
+            <p className="font-semibold">Wrong Network</p>
+            <p className="text-sm mt-1">{chainError}</p>
+          </div>
+        )}
 
         {writeError && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
