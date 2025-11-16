@@ -27,13 +27,26 @@ app = FastAPI(
 )
 
 # CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Allow specific origins from environment variable, or all origins in development
+allowed_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+if allowed_origins == ["*"]:
+    # In development, allow all origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # Must be False when allow_origins is "*"
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # In production, allow specific origins with credentials
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # WebSocket connection manager
