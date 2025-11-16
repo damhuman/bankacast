@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useSwitchChain } from 'wagmi';
 import { parseUnits } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
@@ -27,24 +27,23 @@ const FACTORY_ABI = [
 export default function CreateVaultPage() {
   const { address, isConnected, chain } = useAccount();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
+  const { switchChain } = useSwitchChain();
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
-  const [chainError, setChainError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setChainError('');
 
     // Check if wallet is connected
     if (!isConnected) {
-      setChainError('Please connect your wallet first');
       return;
     }
 
-    // Check if on correct chain
+    // Check if on correct chain - if not, switch automatically
     if (chain?.id !== CHAIN_ID) {
-      setChainError(`Wrong network! Please switch to Base Sepolia (Chain ID: ${CHAIN_ID}). Current: ${chain?.name || chain?.id || 'Unknown'}`);
+      console.log('Switching to Base Sepolia...');
+      switchChain({ chainId: CHAIN_ID });
       return;
     }
 
@@ -85,13 +84,6 @@ export default function CreateVaultPage() {
         <p className="text-gray-600 mb-8">
           Set your goal, deadline, and start saving together
         </p>
-
-        {chainError && (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-6">
-            <p className="font-semibold">Wrong Network</p>
-            <p className="text-sm mt-1">{chainError}</p>
-          </div>
-        )}
 
         {writeError && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
