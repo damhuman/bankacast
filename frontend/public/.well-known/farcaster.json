@@ -12,5 +12,8 @@
     "splashBackgroundColor": "#0052FF",
     "homeUrl": "https://bankacast.netlify.app",
     "webhookUrl": "https://bankacast.netlify.app/api/webhook"
+  },
+  "baseBuilder": {
+    "ownerAddress": "0x4Ff1E2B14d72C29a8fb6D2eD9F05d27BB320Bbb4"
   }
 }
