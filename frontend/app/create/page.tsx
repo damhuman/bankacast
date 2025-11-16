@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
-import { useAccount, useWriteContract, useSwitchChain } from 'wagmi';
-import { parseUnits } from 'viem';
+import { useAccount, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi';
+import { parseUnits, decodeEventLog } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
@@ -21,16 +22,58 @@ const FACTORY_ABI = [
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "vault", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "goalAmount", "type": "uint256" }
+    ],
+    "name": "VaultCreated",
+    "type": "event"
   }
 ] as const;
 
 export default function CreateVaultPage() {
+  const router = useRouter();
   const { address, isConnected, chain } = useAccount();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { switchChain } = useSwitchChain();
+  const { data: receipt, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
+
+  // Redirect to vault page after transaction is confirmed
+  useEffect(() => {
+    if (isSuccess && receipt) {
+      // Get VaultCreated event from logs
+      const vaultCreatedEvent = receipt.logs.find((log) => {
+        try {
+          const decoded = decodeEventLog({
+            abi: FACTORY_ABI,
+            data: log.data,
+            topics: log.topics,
+          });
+          return decoded.eventName === 'VaultCreated';
+        } catch {
+          return false;
+        }
+      });
+
+      if (vaultCreatedEvent) {
+        const decoded = decodeEventLog({
+          abi: FACTORY_ABI,
+          data: vaultCreatedEvent.data,
+          topics: vaultCreatedEvent.topics,
+        });
+        // @ts-ignore
+        const vaultAddress = decoded.args.vault;
+        router.push(`/vault/${vaultAddress}`);
+      }
+    }
+  }, [isSuccess, receipt, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
