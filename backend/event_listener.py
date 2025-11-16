@@ -90,7 +90,7 @@ class EventListener:
                 if current_block > self.last_block:
                     # Get events since last check
                     events = self.factory_contract.events.VaultCreated.get_logs(
-                        fromBlock=self.last_block + 1, toBlock=current_block
+                        from_block=self.last_block + 1, to_block=current_block
                     )
 
                     for event in events:
@@ -193,7 +193,7 @@ class EventListener:
 
             # Get Contributed events
             events = vault_contract.events.Contributed.get_logs(
-                fromBlock=from_block, toBlock=current_block
+                from_block=from_block, to_block=current_block
             )
 
             for event in events:
