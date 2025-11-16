@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePrivy } from '@privy-io/react-auth';
-import { useWalletClient } from 'wagmi';
+import { ConnectAccount } from '@coinbase/onchainkit/wallet';
+import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
@@ -24,8 +24,8 @@ const FACTORY_ABI = [
 ] as const;
 
 export default function CreateVaultPage() {
-  const { login, authenticated, ready } = usePrivy();
-  const { data: walletClient } = useWalletClient();
+  const { address, isConnected } = useAccount();
+  const { writeContract, data: hash, isPending } = useWriteContract();
 
   const [title, setTitle] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
@@ -38,8 +38,8 @@ export default function CreateVaultPage() {
     e.preventDefault();
 
     // Check if wallet is connected
-    if (!authenticated || !walletClient) {
-      login();
+    if (!isConnected) {
+      alert('Please connect your wallet first');
       return;
     }
 
@@ -56,23 +56,14 @@ export default function CreateVaultPage() {
       const deadlineTimestamp = BigInt(Math.floor(Date.now() / 1000)) + hundredYearsInSeconds;
 
       // Call createVault on the factory contract
-      const { request } = await walletClient.simulateContract({
+      writeContract({
         address: FACTORY_ADDRESS,
         abi: FACTORY_ABI,
         functionName: 'createVault',
         args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
       });
 
-      const hash = await walletClient.writeContract(request);
-
-      // Wait for transaction confirmation
-      setSuccess('Transaction submitted! Waiting for confirmation...');
-
-      // You could add transaction receipt watching here
-      // For now, we'll use the hash to construct a likely vault address
-      setVaultAddress(hash); // Placeholder - ideally parse from event logs
-
-      setSuccess('Vault created successfully!');
+      setSuccess('Transaction submitted! Check your wallet...');
 
     } catch (err: any) {
       console.error('Vault creation error:', err);
@@ -164,28 +155,24 @@ export default function CreateVaultPage() {
             </ol>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !ready}
-            className="w-full bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Creating Vault...' : authenticated ? 'Create Vault' : 'Connect Wallet to Create'}
-          </button>
+          {!isConnected ? (
+            <div className="w-full flex justify-center">
+              <ConnectAccount />
+            </div>
+          ) : (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating Vault...' : 'Create Vault'}
+            </button>
+          )}
 
           <p className="text-xs text-gray-500 mt-4 text-center">
             By creating a vault, you agree that funds will be locked until the goal is reached
           </p>
         </form>
-
-        {!authenticated && ready && (
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="font-semibold text-blue-900 mb-2">🔐 Wallet Connection Required</h3>
-            <p className="text-sm text-blue-800">
-              Click the "Connect Wallet to Create" button above to connect your wallet and create a vault.
-              Privy will guide you through the process.
-            </p>
-          </div>
-        )}
       </div>
     </main>
   );
