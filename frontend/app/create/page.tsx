@@ -27,8 +27,12 @@ const FACTORY_ABI = [
     "anonymous": false,
     "inputs": [
       { "indexed": true, "internalType": "address", "name": "vault", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "goalAmount", "type": "uint256" }
+      { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "goalAmount", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "deadline", "type": "uint256" },
+      { "indexed": false, "internalType": "string", "name": "metadataURI", "type": "string" },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "vaultIndex", "type": "uint256" }
     ],
     "name": "VaultCreated",
     "type": "event"
