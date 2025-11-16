@@ -33,13 +33,17 @@ export async function GET(req: NextRequest) {
             justifyContent: 'center',
             width: '100%',
             height: '100%',
-            backgroundColor: '#0052FF',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             fontSize: 60,
             fontWeight: 'bold',
           }}
         >
+          <div style={{ marginBottom: '20px' }}>💰</div>
           <div>Vault Not Found</div>
+          <div style={{ fontSize: 32, marginTop: '20px', opacity: 0.8 }}>
+            Please check the vault address
+          </div>
         </div>
       ),
       {
@@ -63,243 +67,211 @@ export async function GET(req: NextRequest) {
           width: '100%',
           height: '100%',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          padding: '0',
-          position: 'relative',
+          padding: '80px',
         }}
       >
-        {/* Background Pattern */}
+        {/* Brand Header */}
         <div
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-            opacity: 0.5,
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '60px',
           }}
-        />
+        >
+          <div
+            style={{
+              fontSize: 56,
+              fontWeight: 'bold',
+              color: 'white',
+              marginRight: '20px',
+            }}
+          >
+            Banka
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              color: 'rgba(255,255,255,0.8)',
+            }}
+          >
+            💰 Social Savings
+          </div>
+        </div>
 
-        {/* Content Container */}
+        {/* Title Card */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            width: '100%',
-            height: '100%',
-            padding: '80px',
-            position: 'relative',
-            zIndex: 1,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '32px',
+            padding: '60px',
+            marginBottom: '50px',
           }}
         >
-          {/* Brand Header */}
+          {/* Title */}
+          <div
+            style={{
+              fontSize: 52,
+              fontWeight: 'bold',
+              color: '#1a1a2e',
+              marginBottom: '40px',
+              lineHeight: 1.2,
+            }}
+          >
+            {vault.title || 'Savings Vault'}
+          </div>
+
+          {/* Progress Section */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
-              marginBottom: '60px',
+              marginBottom: '40px',
             }}
           >
             <div
               style={{
-                fontSize: 56,
+                fontSize: 72,
                 fontWeight: 'bold',
-                color: 'white',
-                letterSpacing: '-1px',
+                color: '#667eea',
+                marginRight: '30px',
               }}
             >
-              Banka
+              {progress}%
             </div>
-            <div
-              style={{
-                fontSize: 28,
-                color: 'rgba(255,255,255,0.8)',
-                marginTop: '8px',
-              }}
-            >
-              💰 Social Savings
-            </div>
-          </div>
-
-          {/* Title Card */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '32px',
-              padding: '60px',
-              marginBottom: '50px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: 52,
-                fontWeight: 'bold',
-                color: '#1a1a2e',
-                marginBottom: '30px',
-                lineHeight: 1.2,
-              }}
-            >
-              {vault.title || 'Savings Vault'}
-            </div>
-
-            {/* Progress Section */}
             <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '30px',
-                marginBottom: '35px',
+                flexDirection: 'column',
+                flex: 1,
               }}
             >
               <div
                 style={{
-                  fontSize: 72,
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundClip: 'text',
-                  color: 'transparent',
+                  fontSize: 28,
+                  color: '#666',
+                  marginBottom: '12px',
                 }}
               >
-                {progress}%
+                Progress to Goal
               </div>
+              {/* Progress bar */}
               <div
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  flex: 1,
+                  width: '100%',
+                  height: '24px',
+                  backgroundColor: '#e0e0e0',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 28,
-                    color: '#666',
-                    marginBottom: '12px',
-                  }}
-                >
-                  Progress to Goal
-                </div>
-                {/* Progress bar */}
                 <div
                   style={{
                     display: 'flex',
-                    width: '100%',
-                    height: '24px',
-                    backgroundColor: '#e0e0e0',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
+                    width: `${progress}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
                   }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: `${progress}%`,
-                      height: '100%',
-                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '50px',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
-                  💵 Raised
-                </div>
-                <div
-                  style={{
-                    fontSize: 56,
-                    fontWeight: 'bold',
-                    color: '#667eea',
-                  }}
-                >
-                  ${current}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
-                  🎯 Goal
-                </div>
-                <div
-                  style={{
-                    fontSize: 56,
-                    fontWeight: 'bold',
-                    color: '#1a1a2e',
-                  }}
-                >
-                  ${goal}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
-                  👥 Contributors
-                </div>
-                <div
-                  style={{
-                    fontSize: 56,
-                    fontWeight: 'bold',
-                    color: '#1a1a2e',
-                  }}
-                >
-                  {contributors}
-                </div>
+                />
               </div>
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Stats Grid */}
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '20px',
-              marginTop: 'auto',
+              justifyContent: 'space-between',
             }}
           >
             <div
               style={{
-                fontSize: 32,
-                color: 'rgba(255,255,255,0.9)',
-                fontWeight: 500,
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              Powered by Aave V3 on Base
+              <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                💵 Raised
+              </div>
+              <div
+                style={{
+                  fontSize: 56,
+                  fontWeight: 'bold',
+                  color: '#667eea',
+                }}
+              >
+                ${current}
+              </div>
             </div>
+
             <div
               style={{
-                fontSize: 28,
-                color: 'rgba(255,255,255,0.7)',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              🔒 Trustless & Secure
+              <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                🎯 Goal
+              </div>
+              <div
+                style={{
+                  fontSize: 56,
+                  fontWeight: 'bold',
+                  color: '#1a1a2e',
+                }}
+              >
+                ${goal}
+              </div>
             </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                👥 Contributors
+              </div>
+              <div
+                style={{
+                  fontSize: 56,
+                  fontWeight: 'bold',
+                  color: '#1a1a2e',
+                }}
+              >
+                {contributors}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 32,
+              color: 'rgba(255,255,255,0.9)',
+              fontWeight: 500,
+              marginRight: '20px',
+            }}
+          >
+            Powered by Aave V3 on Base
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              color: 'rgba(255,255,255,0.7)',
+            }}
+          >
+            🔒 Trustless & Secure
           </div>
         </div>
       </div>

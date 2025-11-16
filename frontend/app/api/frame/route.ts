@@ -29,6 +29,14 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Vault not found', { status: 404 });
   }
 
+  // Prepare display values
+  const title = vault.title || 'Savings Vault';
+  const description = vault.description || 'Join this social savings vault on Base';
+  const progress = vault.progress || 0;
+  const raised = (vault.total_contributed / 1e6).toFixed(2);
+  const goal = (vault.goal_amount / 1e6).toFixed(2);
+  const contributors = vault.contributors?.length || 0;
+
   // Generate Frame HTML
   const frameHtml = `
     <!DOCTYPE html>
@@ -61,13 +69,97 @@ export async function GET(req: NextRequest) {
 
         <meta property="fc:frame:post_url" content="${APP_URL}/api/frame?vault=${vaultAddress}" />
 
-        <title>${vault.title || 'Savings Vault'}</title>
-        <meta name="description" content="${vault.description || 'Contribute to this savings vault'}" />
+        <title>${title} - Banka</title>
+        <meta name="description" content="${description}" />
+
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            line-height: 1.6;
+          }
+          .card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 20px;
+          }
+          h1 {
+            margin: 0 0 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+          }
+          .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+          }
+          .stat {
+            text-align: center;
+          }
+          .stat-label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 5px;
+          }
+          .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+          }
+          .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0 20px 0;
+          }
+          .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: ${progress}%;
+          }
+        </style>
       </head>
       <body>
-        <h1>${vault.title}</h1>
-        <p>${vault.description}</p>
-        <p>Progress: ${vault.progress}% (${vault.total_contributed / 1e6} / ${vault.goal_amount / 1e6} USDC)</p>
+        <h1>💰 Banka</h1>
+        <p>Social Savings Vaults on Base</p>
+
+        <div class="card">
+          <h2>${title}</h2>
+          ${description ? `<p>${description}</p>` : ''}
+
+          <div style="margin-top: 20px;">
+            <strong style="font-size: 36px; color: #667eea;">${progress}%</strong>
+            <span style="color: #666;"> Progress to Goal</span>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">💵 Raised</div>
+              <div class="stat-value">$${raised}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">🎯 Goal</div>
+              <div class="stat-value">$${goal}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">👥 Contributors</div>
+              <div class="stat-value">${contributors}</div>
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   `;

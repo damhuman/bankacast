@@ -1,10 +1,20 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="max-w-2xl text-center">
-        <h1 className="text-6xl font-bold mb-6">Banka</h1>
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/icon.png"
+            alt="Banka Logo"
+            width={200}
+            height={200}
+            priority
+            className="drop-shadow-lg"
+          />
+        </div>
         <p className="text-xl text-gray-600 mb-8">
           Social savings vaults with automated yield on Base
         </p>
