@@ -49,7 +49,6 @@ class VaultResponse(BaseModel):
     address: str
     creator: str
     goal_amount: int
-    deadline: int
     title: str
     description: Optional[str]
     image_url: Optional[str]
