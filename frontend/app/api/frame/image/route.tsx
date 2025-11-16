@@ -3,6 +3,12 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
+// Generate QR code data URL for vault address
+function generateQRCodeDataURL(vaultAddress: string): string {
+  // Using a simple QR code API service that works in Edge runtime
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vaultAddress)}&margin=10`;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const vaultAddress = searchParams.get('vault');
@@ -10,6 +16,8 @@ export async function GET(req: NextRequest) {
   if (!vaultAddress) {
     return new Response('Missing vault address', { status: 400 });
   }
+
+  const qrCodeUrl = generateQRCodeDataURL(vaultAddress);
 
   // Fetch vault data
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
@@ -248,30 +256,63 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer with QR Code */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
-          <div
-            style={{
-              fontSize: 32,
-              color: 'rgba(255,255,255,0.9)',
-              fontWeight: 500,
-              marginRight: '20px',
-            }}
-          >
-            Powered by Aave V3 on Base
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div
+              style={{
+                fontSize: 32,
+                color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500,
+                marginRight: '20px',
+              }}
+            >
+              Powered by Aave V3 on Base
+            </div>
+            <div
+              style={{
+                fontSize: 28,
+                color: 'rgba(255,255,255,0.7)',
+              }}
+            >
+              🔒 Trustless & Secure
+            </div>
           </div>
+
+          {/* QR Code */}
           <div
             style={{
-              fontSize: 28,
-              color: 'rgba(255,255,255,0.7)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: '16px',
+              padding: '16px',
             }}
           >
-            🔒 Trustless & Secure
+            <img
+              src={qrCodeUrl}
+              width="120"
+              height="120"
+              alt="Vault QR"
+              style={{ borderRadius: '8px' }}
+            />
+            <div
+              style={{
+                fontSize: 16,
+                color: '#666',
+                marginTop: '8px',
+                fontWeight: 600,
+              }}
+            >
+              Scan for Vault
+            </div>
           </div>
         </div>
       </div>
