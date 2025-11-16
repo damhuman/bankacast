@@ -62,118 +62,245 @@ export async function GET(req: NextRequest) {
           flexDirection: 'column',
           width: '100%',
           height: '100%',
-          backgroundColor: '#ffffff',
-          padding: '80px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          padding: '0',
+          position: 'relative',
         }}
       >
-        {/* Header */}
+        {/* Background Pattern */}
         <div
           style={{
-            display: 'flex',
-            fontSize: 48,
-            fontWeight: 'bold',
-            color: '#0A0B0D',
-            marginBottom: '40px',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            opacity: 0.5,
           }}
-        >
-          💰 {vault.title || 'Savings Vault'}
-        </div>
+        />
 
-        {/* Progress */}
+        {/* Content Container */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginBottom: '40px',
+            width: '100%',
+            height: '100%',
+            padding: '80px',
+            position: 'relative',
+            zIndex: 1,
           }}
         >
-          <div
-            style={{
-              fontSize: 36,
-              color: '#666',
-              marginBottom: '20px',
-            }}
-          >
-            Progress: {progress}%
-          </div>
-
-          {/* Progress bar */}
+          {/* Brand Header */}
           <div
             style={{
               display: 'flex',
-              width: '100%',
-              height: '40px',
-              backgroundColor: '#E5E5E5',
-              borderRadius: '20px',
-              overflow: 'hidden',
+              alignItems: 'center',
+              gap: '20px',
+              marginBottom: '60px',
             }}
           >
             <div
               style={{
-                display: 'flex',
-                width: `${progress}%`,
-                height: '100%',
-                backgroundColor: '#0052FF',
+                fontSize: 56,
+                fontWeight: 'bold',
+                color: 'white',
+                letterSpacing: '-1px',
               }}
-            />
+            >
+              Banka
+            </div>
+            <div
+              style={{
+                fontSize: 28,
+                color: 'rgba(255,255,255,0.8)',
+                marginTop: '8px',
+              }}
+            >
+              💰 Social Savings
+            </div>
           </div>
-        </div>
 
-        {/* Stats */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '40px',
-          }}
-        >
+          {/* Title Card */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '32px',
+              padding: '60px',
+              marginBottom: '50px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
             }}
           >
-            <div style={{ fontSize: 28, color: '#666' }}>Raised</div>
-            <div style={{ fontSize: 48, fontWeight: 'bold', color: '#0052FF' }}>
-              ${current}
+            <div
+              style={{
+                fontSize: 52,
+                fontWeight: 'bold',
+                color: '#1a1a2e',
+                marginBottom: '30px',
+                lineHeight: 1.2,
+              }}
+            >
+              {vault.title || 'Savings Vault'}
+            </div>
+
+            {/* Progress Section */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '30px',
+                marginBottom: '35px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 72,
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                }}
+              >
+                {progress}%
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 28,
+                    color: '#666',
+                    marginBottom: '12px',
+                  }}
+                >
+                  Progress to Goal
+                </div>
+                {/* Progress bar */}
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    height: '24px',
+                    backgroundColor: '#e0e0e0',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: `${progress}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '50px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                  💵 Raised
+                </div>
+                <div
+                  style={{
+                    fontSize: 56,
+                    fontWeight: 'bold',
+                    color: '#667eea',
+                  }}
+                >
+                  ${current}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                  🎯 Goal
+                </div>
+                <div
+                  style={{
+                    fontSize: 56,
+                    fontWeight: 'bold',
+                    color: '#1a1a2e',
+                  }}
+                >
+                  ${goal}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <div style={{ fontSize: 26, color: '#888', marginBottom: '8px' }}>
+                  👥 Contributors
+                </div>
+                <div
+                  style={{
+                    fontSize: 56,
+                    fontWeight: 'bold',
+                    color: '#1a1a2e',
+                  }}
+                >
+                  {contributors}
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Footer */}
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px',
+              marginTop: 'auto',
             }}
           >
-            <div style={{ fontSize: 28, color: '#666' }}>Goal</div>
-            <div style={{ fontSize: 48, fontWeight: 'bold', color: '#0A0B0D' }}>
-              ${goal}
+            <div
+              style={{
+                fontSize: 32,
+                color: 'rgba(255,255,255,0.9)',
+                fontWeight: 500,
+              }}
+            >
+              Powered by Aave V3 on Base
+            </div>
+            <div
+              style={{
+                fontSize: 28,
+                color: 'rgba(255,255,255,0.7)',
+              }}
+            >
+              🔒 Trustless & Secure
             </div>
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <div style={{ fontSize: 28, color: '#666' }}>Contributors</div>
-            <div style={{ fontSize: 48, fontWeight: 'bold', color: '#0A0B0D' }}>
-              {contributors}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 'auto',
-            fontSize: 32,
-            color: '#999',
-          }}
-        >
-          👥 Social Savings on Base
         </div>
       </div>
     ),
