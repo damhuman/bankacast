@@ -48,3 +48,6 @@ yarn-error.log*
 *.key
 *.pem
 deployment.log
+
+# Local Netlify folder
+.netlify
