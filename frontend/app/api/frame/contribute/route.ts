@@ -15,56 +15,46 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Missing parameters', { status: 400 });
   }
 
-  // Convert USDC amount to wei (6 decimals)
-  const amountWei = BigInt(Number(amount) * 1e6).toString();
+  // Get the app URL from request headers (works in both dev and prod)
+  const protocol = req.headers.get('x-forwarded-proto') || 'http';
+  const host = req.headers.get('host') || 'localhost:3001';
+  const appUrl = `${protocol}://${host}`;
 
-  // Get user's Farcaster ID from frame message
-  const fid = body?.untrustedData?.fid;
-  const address = body?.untrustedData?.address;
-
-  // Generate transaction for contributing
-  // User needs to:
-  // 1. Approve USDC
-  // 2. Call vault.contribute()
-
-  const transaction = {
-    chainId: `eip155:${process.env.NEXT_PUBLIC_CHAIN_ID || '84532'}`, // Base Sepolia
-    method: 'eth_sendTransaction',
-    params: {
-      abi: [
-        {
-          inputs: [{ name: 'amount', type: 'uint256' }],
-          name: 'contribute',
-          outputs: [],
-          stateMutability: 'nonpayable',
-          type: 'function',
-        },
-      ],
-      to: vaultAddress,
-      data: `0x3f5a49be${amountWei.padStart(64, '0')}`, // contribute(uint256)
-      value: '0',
-    },
-  };
-
-  // Return success frame with transaction
+  // Return frame with two-step transaction flow
+  // Step 1: Approve USDC
+  // Step 2: Contribute to vault
   const frameHtml = `
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="utf-8">
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${APP_URL}/api/frame/success?vault=${vaultAddress}&amount=${amount}" />
-        <meta property="fc:frame:button:1" content="✅ Contribute $${amount}" />
+        <meta property="fc:frame:image" content="${appUrl}/api/frame/image?vault=${vaultAddress}" />
+        <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
+
+        <!-- Step 1: Approve USDC -->
+        <meta property="fc:frame:button:1" content="1️⃣ Approve $${amount} USDC" />
         <meta property="fc:frame:button:1:action" content="tx" />
-        <meta property="fc:frame:button:1:target" content="${APP_URL}/api/frame/tx?vault=${vaultAddress}&amount=${amount}" />
-        <meta property="fc:frame:button:2" content="🔙 Back" />
-        <meta property="fc:frame:button:2:action" content="post" />
-        <meta property="fc:frame:button:2:target" content="${APP_URL}/api/frame?vault=${vaultAddress}" />
+        <meta property="fc:frame:button:1:target" content="${appUrl}/api/frame/tx?vault=${vaultAddress}&amount=${amount}&step=approve" />
+
+        <!-- Step 2: Contribute -->
+        <meta property="fc:frame:button:2" content="2️⃣ Contribute $${amount}" />
+        <meta property="fc:frame:button:2:action" content="tx" />
+        <meta property="fc:frame:button:2:target" content="${appUrl}/api/frame/tx?vault=${vaultAddress}&amount=${amount}&step=contribute" />
+
+        <!-- Back button -->
+        <meta property="fc:frame:button:3" content="🔙 Back" />
+        <meta property="fc:frame:button:3:action" content="post" />
+        <meta property="fc:frame:button:3:target" content="${appUrl}/api/frame?vault=${vaultAddress}" />
+
+        <meta property="fc:frame:post_url" content="${appUrl}/api/frame?vault=${vaultAddress}" />
+
         <title>Contribute $${amount}</title>
       </head>
       <body>
         <h1>Contribute $${amount} USDC</h1>
-        <p>Click to send transaction</p>
+        <p>Step 1: Approve USDC spending</p>
+        <p>Step 2: Contribute to vault</p>
       </body>
     </html>
   `;

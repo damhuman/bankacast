@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
         <!-- Frame metadata -->
         <meta property="fc:frame" content="${FRAME_VERSION}" />
         <meta property="fc:frame:image" content="${APP_URL}/api/frame/image?vault=${vaultAddress}" />
-        <meta property="fc:frame:image:aspect_ratio" content="1:1" />
+        <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
 
         <!-- Buttons -->
         <meta property="fc:frame:button:1" content="💰 $10" />
