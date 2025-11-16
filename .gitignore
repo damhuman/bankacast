@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+.env*.local
+contracts/.env
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.log
+
+# Database
+*.db
+*.db-journal
+banka.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Foundry/Forge
+cache/
+out/
+broadcast/
+deployments/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Private keys (ВАЖЛИВО!)
+*.key
+*.pem
+deployment.log

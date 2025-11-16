@@ -1,0 +1,16 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhFQzVENTcyRDcxNzE0MTQzOTIzODRCMjNCNjdDMEY4NTM0MkI2RTcwIn0",
+    "payload": "eyJkb21haW4iOiJyZW5lLXVuZGVyYnJlZC1ub25zeW5vZGljYWxseS5uZ3Jvay1mcmVlLmRldiJ9",
+    "signature": "MHhiYTM0ZjA2ZGQ3NmUxOGVlOGI4YzE5MjYzNWQ0YzVhNjJmYzBjOTBhY2NkNWFkODQ5YjcxODMwMTJiYzQ2YzFiNGMxNjk0ZjdhMjkyYTVhYjhmNjc5YmVhYmE4YmQ1MWI2MDE2ODViZGE3ZWRhMmRlMDEwNDE1YWRhNDJhZTBiNjFi"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Banka",
+    "iconUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/icon.png",
+    "splashImageUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/splash.png",
+    "splashBackgroundColor": "#4F46E5",
+    "homeUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev",
+    "webhookUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/api/webhook"
+  }
+}

@@ -1,0 +1,206 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+
+interface Vault {
+  address: string;
+  creator: string;
+  goal_amount: number;
+  total_contributed: number;
+  deadline: number;
+  metadata_uri: string;
+  withdrawn: boolean;
+  contributors_count: number;
+}
+
+export default function DiscoverPage() {
+  const [vaults, setVaults] = useState<Vault[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchVaults();
+  }, []);
+
+  const fetchVaults = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/vaults`);
+      if (!response.ok) throw new Error('Failed to fetch vaults');
+      const data = await response.json();
+      setVaults(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatAmount = (wei: number) => {
+    return (wei / 1e6).toFixed(2);
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleDateString();
+  };
+
+  const getProgress = (contributed: number, goal: number) => {
+    return Math.min((contributed / goal) * 100, 100);
+  };
+
+  const getTitle = (metadataUri: string) => {
+    return metadataUri.replace('db://', '') || 'Untitled Vault';
+  };
+
+  const isExpired = (deadline: number) => {
+    return deadline * 1000 < Date.now();
+  };
+
+  return (
+    <main className="min-h-screen p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <Link href="/" className="text-primary hover:underline">
+            ← Back to home
+          </Link>
+        </div>
+
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">Discover Vaults</h1>
+          <p className="text-gray-600">
+            Browse active savings vaults and contribute to help reach goals
+          </p>
+        </div>
+
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="mt-4 text-gray-600">Loading vaults...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
+            Error: {error}
+          </div>
+        )}
+
+        {!loading && !error && vaults.length === 0 && (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <p className="text-xl text-gray-600 mb-4">No vaults found yet</p>
+            <p className="text-gray-500 mb-6">Be the first to create a savings vault!</p>
+            <Link
+              href="/create"
+              className="inline-block bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition"
+            >
+              Create First Vault
+            </Link>
+          </div>
+        )}
+
+        {!loading && !error && vaults.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vaults.map((vault) => {
+              const progress = getProgress(vault.total_contributed, vault.goal_amount);
+              const expired = isExpired(vault.deadline);
+              const goalReached = vault.total_contributed >= vault.goal_amount;
+
+              return (
+                <div
+                  key={vault.address}
+                  className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition"
+                >
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold mb-1">{getTitle(vault.metadata_uri)}</h3>
+                    <p className="text-xs text-gray-500 truncate">
+                      {vault.address}
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Progress</span>
+                      <span className="font-semibold">{progress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Raised</span>
+                      <span className="font-semibold">
+                        ${formatAmount(vault.total_contributed)} / ${formatAmount(vault.goal_amount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Contributors</span>
+                      <span className="font-semibold">{vault.contributors_count}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Deadline</span>
+                      <span className={expired ? 'text-red-600 font-semibold' : ''}>
+                        {formatDate(vault.deadline)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {goalReached && (
+                    <div className="bg-green-50 text-green-800 text-sm px-3 py-2 rounded mb-3">
+                      ✅ Goal Reached!
+                    </div>
+                  )}
+
+                  {expired && !goalReached && (
+                    <div className="bg-red-50 text-red-800 text-sm px-3 py-2 rounded mb-3">
+                      ⏰ Expired
+                    </div>
+                  )}
+
+                  {vault.withdrawn && (
+                    <div className="bg-gray-100 text-gray-600 text-sm px-3 py-2 rounded mb-3">
+                      💰 Withdrawn
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/vault/${vault.address}`}
+                      className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition text-center"
+                    >
+                      View Details
+                    </Link>
+                    {!vault.withdrawn && !expired && !goalReached && (
+                      <button
+                        className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition"
+                        onClick={() => alert('Connect wallet to contribute')}
+                      >
+                        Contribute
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-12 bg-blue-50 border-l-4 border-primary p-6 rounded">
+          <h3 className="font-semibold mb-2">💡 How to contribute:</h3>
+          <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+            <li>Click "View Details" on any vault</li>
+            <li>Copy the Frame URL or share directly to Farcaster</li>
+            <li>Contribute via the interactive Frame</li>
+            <li>Or connect your wallet and contribute directly</li>
+          </ol>
+        </div>
+      </div>
+    </main>
+  );
+}
