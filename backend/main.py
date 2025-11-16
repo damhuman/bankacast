@@ -170,6 +170,11 @@ async def get_vault(
         else 0
     )
 
+    # Ensure default values for nullable fields (migration compatibility)
+    current_balance = vault.current_balance if vault.current_balance is not None else 0
+    yield_earned = vault.yield_earned if vault.yield_earned is not None else 0
+    current_apy = vault.current_apy if vault.current_apy is not None else 0
+
     return VaultResponse(
         address=vault.address,
         creator=vault.creator,
@@ -178,9 +183,9 @@ async def get_vault(
         description=vault.description,
         image_url=vault.image_url,
         total_contributed=vault.total_contributed,
-        current_balance=vault.current_balance,
-        yield_earned=vault.yield_earned,
-        current_apy=vault.current_apy,
+        current_balance=current_balance,
+        yield_earned=yield_earned,
+        current_apy=current_apy,
         progress=progress,
         contributors=contributors_list,
         status=vault.status,
