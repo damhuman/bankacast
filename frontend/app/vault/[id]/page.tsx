@@ -1,9 +1,10 @@
 'use client';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
-
 export default function VaultPage({ params }: { params: { id: string } }) {
   const { id } = params;
+
+  // Use window.location.origin to get the current domain (works in prod and dev)
+  const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
 
   const frameUrl = `${APP_URL}/api/frame?vault=${id}`;
   const shareText = `Check out this savings vault on Banka!\n\n${frameUrl}`;
