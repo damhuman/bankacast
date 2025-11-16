@@ -15,8 +15,8 @@ contract Vault is Initializable {
 
     address public creator;
     uint256 public goalAmount;
-    uint256 public deadline;
-    string public metadataURI; // IPFS hash or DB ID for title/description/image
+    string public metadataURI; // DB ID for title
+    string public description; // Detailed description
 
     address public aavePool;
     address public usdc;
@@ -35,6 +35,7 @@ contract Vault is Initializable {
         address indexed contributor,
         uint256 amount,
         uint256 totalContributed,
+        uint256 currentYield,
         uint256 timestamp
     );
 
@@ -46,19 +47,21 @@ contract Vault is Initializable {
         uint256 timestamp
     );
 
-    event DeadlineExtended(uint256 oldDeadline, uint256 newDeadline);
+    event Smashed(
+        address indexed creator,
+        uint256 principal,
+        uint256 yield,
+        uint256 total,
+        uint256 timestamp
+    );
 
     // ============ Errors ============
 
     error NotCreator();
     error AlreadyWithdrawn();
-    error VaultExpired();
     error InvalidAmount();
-    error ExceedsGoal();
     error TransferFailed();
     error GoalNotReached();
-    error InvalidDeadline();
-    error DeadlineNotPassed();
 
     // ============ Modifiers ============
 
@@ -78,23 +81,23 @@ contract Vault is Initializable {
      * @notice Initialize the vault (replaces constructor for clones)
      * @param _creator Address of vault creator
      * @param _goalAmount Target amount in USDC (6 decimals)
-     * @param _deadline Unix timestamp deadline
-     * @param _metadataURI IPFS hash or metadata reference
+     * @param _metadataURI DB ID for title
+     * @param _description Detailed description
      * @param _aavePool Aave V3 Pool address
      * @param _usdc USDC token address
      */
     function initialize(
         address _creator,
         uint256 _goalAmount,
-        uint256 _deadline,
         string calldata _metadataURI,
+        string calldata _description,
         address _aavePool,
         address _usdc
     ) external initializer {
         creator = _creator;
         goalAmount = _goalAmount;
-        deadline = _deadline;
         metadataURI = _metadataURI;
+        description = _description;
         aavePool = _aavePool;
         usdc = _usdc;
     }
@@ -106,9 +109,7 @@ contract Vault is Initializable {
      * @param amount Amount of USDC to contribute (6 decimals)
      */
     function contribute(uint256 amount) external notWithdrawn {
-        if (block.timestamp >= deadline) revert VaultExpired();
         if (amount == 0) revert InvalidAmount();
-        if (totalContributed + amount > goalAmount) revert ExceedsGoal();
 
         // Transfer USDC from contributor to this contract
         if (!IERC20(usdc).transferFrom(msg.sender, address(this), amount)) {
@@ -132,7 +133,13 @@ contract Vault is Initializable {
             aUsdc = IPool(aavePool).getReserveData(usdc).aTokenAddress;
         }
 
-        emit Contributed(msg.sender, amount, totalContributed, block.timestamp);
+        uint256 currentYield = aUsdc != address(0)
+            ? (IERC20(aUsdc).balanceOf(address(this)) > totalContributed
+                ? IERC20(aUsdc).balanceOf(address(this)) - totalContributed
+                : 0)
+            : 0;
+
+        emit Contributed(msg.sender, amount, totalContributed, currentYield, block.timestamp);
     }
 
     /**
@@ -154,18 +161,23 @@ contract Vault is Initializable {
     }
 
     /**
-     * @notice Extend deadline if goal not reached (creator only)
-     * @param newDeadline New deadline timestamp
+     * @notice Smash the vault early (withdraw even if goal not reached)
+     * @dev Creator can withdraw funds at any time
      */
-    function extendDeadline(uint256 newDeadline) external onlyCreator notWithdrawn {
-        if (newDeadline <= deadline) revert InvalidDeadline();
-        if (block.timestamp < deadline) revert DeadlineNotPassed();
-        if (totalContributed >= goalAmount) revert GoalNotReached(); // Can't extend if goal reached
+    function smash() external onlyCreator notWithdrawn {
+        isWithdrawn = true;
 
-        uint256 oldDeadline = deadline;
-        deadline = newDeadline;
+        uint256 aTokenBalance = aUsdc != address(0) ? IERC20(aUsdc).balanceOf(address(this)) : 0;
 
-        emit DeadlineExtended(oldDeadline, newDeadline);
+        // Withdraw from Aave if there are funds
+        if (aTokenBalance > 0) {
+            IPool(aavePool).withdraw(usdc, aTokenBalance, creator);
+        }
+
+        uint256 principal = totalContributed;
+        uint256 yield = aTokenBalance > principal ? aTokenBalance - principal : 0;
+
+        emit Smashed(creator, principal, yield, aTokenBalance, block.timestamp);
     }
 
     // ============ View Functions ============
@@ -174,7 +186,7 @@ contract Vault is Initializable {
      * @notice Get vault progress
      * @return current Current contributed amount
      * @return goal Goal amount
-     * @return percentage Progress percentage (0-100)
+     * @return percentage Progress percentage (can exceed 100)
      */
     function getProgress()
         external
@@ -203,6 +215,41 @@ contract Vault is Initializable {
     }
 
     /**
+     * @notice Get current APY from Aave for USDC
+     * @return apy Annual Percentage Yield in basis points (10000 = 100%)
+     */
+    function getCurrentAPY() external view returns (uint256 apy) {
+        if (aUsdc == address(0)) return 0;
+
+        // Get reserve data from Aave and extract currentLiquidityRate
+        // liquidityRate is in ray (1e27), convert to basis points (1e4)
+        // APY = (liquidityRate / 1e27) * 10000
+        apy = IPool(aavePool).getReserveData(usdc).currentLiquidityRate / 1e23; // 1e27 / 1e4 = 1e23
+    }
+
+    /**
+     * @notice Get detailed yield statistics
+     * @return principal Total contributed amount
+     * @return currentBalance Current balance (principal + yield)
+     * @return yieldEarned Accumulated yield from Aave
+     * @return yieldPercentage Yield percentage in basis points (10000 = 100%)
+     * @return currentAPY Current APY from Aave in basis points
+     */
+    function getYieldStats() external view returns (
+        uint256 principal,
+        uint256 currentBalance,
+        uint256 yieldEarned,
+        uint256 yieldPercentage,
+        uint256 currentAPY
+    ) {
+        principal = totalContributed;
+        currentBalance = aUsdc != address(0) ? IERC20(aUsdc).balanceOf(address(this)) : 0;
+        yieldEarned = currentBalance > principal ? currentBalance - principal : 0;
+        yieldPercentage = principal > 0 ? (yieldEarned * 10000) / principal : 0;
+        currentAPY = this.getCurrentAPY();
+    }
+
+    /**
      * @notice Get list of all contributors
      * @return Array of contributor addresses
      */
@@ -220,12 +267,11 @@ contract Vault is Initializable {
 
     /**
      * @notice Get vault status
-     * @return status Vault status: 0=Active, 1=GoalReached, 2=Expired, 3=Withdrawn
+     * @return status Vault status: 0=Active, 1=GoalReached, 2=Completed
      */
     function getStatus() external view returns (uint8 status) {
-        if (isWithdrawn) return 3; // Withdrawn
+        if (isWithdrawn) return 2; // Completed (withdrawn or smashed)
         if (totalContributed >= goalAmount) return 1; // Goal reached
-        if (block.timestamp >= deadline) return 2; // Expired
         return 0; // Active
     }
 

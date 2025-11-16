@@ -32,20 +32,21 @@ contract VaultTest is Test {
 
         address vault = factory.createVault(
             1000 * 1e6, // 1000 USDC
-            block.timestamp + 30 days,
-            "ipfs://test"
+            "ipfs://test",
+            "Test vault description"
         );
 
         assertTrue(vault != address(0));
         assertEq(Vault(vault).creator(), creator);
         assertEq(Vault(vault).goalAmount(), 1000 * 1e6);
+        assertEq(Vault(vault).description(), "Test vault description");
     }
 
     function testVaultCount() public {
         vm.startPrank(creator);
 
-        factory.createVault(1000 * 1e6, block.timestamp + 30 days, "ipfs://test1");
-        factory.createVault(2000 * 1e6, block.timestamp + 30 days, "ipfs://test2");
+        factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1");
+        factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2");
 
         vm.stopPrank();
 
@@ -55,8 +56,8 @@ contract VaultTest is Test {
     function testGetUserVaults() public {
         vm.startPrank(creator);
 
-        address vault1 = factory.createVault(1000 * 1e6, block.timestamp + 30 days, "ipfs://test1");
-        address vault2 = factory.createVault(2000 * 1e6, block.timestamp + 30 days, "ipfs://test2");
+        address vault1 = factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1");
+        address vault2 = factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2");
 
         vm.stopPrank();
 
@@ -66,18 +67,6 @@ contract VaultTest is Test {
         assertEq(userVaults[1], vault2);
     }
 
-    function test_RevertWhen_DeadlineInPast() public {
-        vm.prank(creator);
-        vm.expectRevert();
-
-        // Should revert: deadline in the past
-        factory.createVault(
-            1000 * 1e6,
-            block.timestamp - 1 days,
-            "ipfs://test"
-        );
-    }
-
     function test_RevertWhen_GoalIsZero() public {
         vm.prank(creator);
         vm.expectRevert();
@@ -85,8 +74,20 @@ contract VaultTest is Test {
         // Should revert: goal is zero
         factory.createVault(
             0,
-            block.timestamp + 30 days,
-            "ipfs://test"
+            "ipfs://test",
+            "Description"
+        );
+    }
+
+    function test_RevertWhen_MetadataEmpty() public {
+        vm.prank(creator);
+        vm.expectRevert();
+
+        // Should revert: empty metadata
+        factory.createVault(
+            1000 * 1e6,
+            "",
+            "Description"
         );
     }
 }

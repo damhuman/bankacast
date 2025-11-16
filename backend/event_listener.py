@@ -20,8 +20,8 @@ VAULT_FACTORY_ABI = [
             {"indexed": True, "name": "vault", "type": "address"},
             {"indexed": True, "name": "creator", "type": "address"},
             {"indexed": False, "name": "goalAmount", "type": "uint256"},
-            {"indexed": False, "name": "deadline", "type": "uint256"},
             {"indexed": False, "name": "metadataURI", "type": "string"},
+            {"indexed": False, "name": "description", "type": "string"},
             {"indexed": False, "name": "timestamp", "type": "uint256"},
             {"indexed": False, "name": "vaultIndex", "type": "uint256"},
         ],
@@ -37,6 +37,7 @@ VAULT_ABI = [
             {"indexed": True, "name": "contributor", "type": "address"},
             {"indexed": False, "name": "amount", "type": "uint256"},
             {"indexed": False, "name": "totalContributed", "type": "uint256"},
+            {"indexed": False, "name": "currentYield", "type": "uint256"},
             {"indexed": False, "name": "timestamp", "type": "uint256"},
         ],
         "name": "Contributed",
@@ -52,7 +53,40 @@ VAULT_ABI = [
             {"indexed": False, "name": "timestamp", "type": "uint256"},
         ],
         "name": "Withdrawn",
-        "type": "event"},
+        "type": "event",
+    },
+    {
+        "anonymous": False,
+        "inputs": [
+            {"indexed": True, "name": "creator", "type": "address"},
+            {"indexed": False, "name": "principal", "type": "uint256"},
+            {"indexed": False, "name": "yield", "type": "uint256"},
+            {"indexed": False, "name": "total", "type": "uint256"},
+            {"indexed": False, "name": "timestamp", "type": "uint256"},
+        ],
+        "name": "Smashed",
+        "type": "event",
+    },
+    {
+        "inputs": [],
+        "name": "getCurrentAPY",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getYieldStats",
+        "outputs": [
+            {"name": "principal", "type": "uint256"},
+            {"name": "currentBalance", "type": "uint256"},
+            {"name": "yieldEarned", "type": "uint256"},
+            {"name": "yieldPercentage", "type": "uint256"},
+            {"name": "currentAPY", "type": "uint256"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
 ]
 
 
@@ -110,8 +144,8 @@ class EventListener:
             vault_address = event["args"]["vault"].lower()
             creator = event["args"]["creator"].lower()
             goal_amount = event["args"]["goalAmount"]
-            deadline = event["args"]["deadline"]
             metadata_uri = event["args"]["metadataURI"]
+            description = event["args"]["description"]
 
             # Check if vault already exists
             existing = db.query(Vault).filter(Vault.address == vault_address).first()
@@ -119,7 +153,7 @@ class EventListener:
                 print(f"Vault {vault_address} already indexed")
                 return
 
-            # Parse metadata_uri to get title/description
+            # Parse metadata_uri to get title
             # For MVP: metadata_uri is like "db://emergency_fund"
             title = metadata_uri.replace("db://", "").replace("_", " ").title()
 
@@ -128,10 +162,13 @@ class EventListener:
                 address=vault_address,
                 creator=creator,
                 goal_amount=goal_amount,
-                deadline=deadline,
                 metadata_uri=metadata_uri,
                 title=title,
+                description=description,
                 total_contributed=0,
+                current_balance=0,
+                yield_earned=0,
+                current_apy=0,
                 status="active",
             )
 
@@ -210,6 +247,7 @@ class EventListener:
             contributor = event["args"]["contributor"].lower()
             amount = event["args"]["amount"]
             total_contributed = event["args"]["totalContributed"]
+            current_yield = event["args"]["currentYield"]
             tx_hash = event["transactionHash"].hex()
             block_number = event["blockNumber"]
 
@@ -231,12 +269,24 @@ class EventListener:
 
             db.add(contribution)
 
-            # Update vault total
+            # Update vault total and yield
             vault = (
                 db.query(Vault).filter(Vault.address == vault_address.lower()).first()
             )
             if vault:
                 vault.total_contributed = total_contributed
+                vault.yield_earned = current_yield
+                vault.current_balance = total_contributed + current_yield
+
+                # Update APY and yield stats from contract
+                try:
+                    vault_contract = self.w3.eth.contract(
+                        address=Web3.to_checksum_address(vault_address), abi=VAULT_ABI
+                    )
+                    apy = vault_contract.functions.getCurrentAPY().call()
+                    vault.current_apy = apy
+                except Exception as e:
+                    print(f"Could not fetch APY for {vault_address}: {e}")
 
                 # Update status if goal reached
                 if total_contributed >= vault.goal_amount:

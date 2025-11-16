@@ -15,8 +15,8 @@ const FACTORY_ABI = [
   {
     "inputs": [
       { "internalType": "uint256", "name": "goalAmount", "type": "uint256" },
-      { "internalType": "uint256", "name": "deadline", "type": "uint256" },
-      { "internalType": "string", "name": "metadataURI", "type": "string" }
+      { "internalType": "string", "name": "metadataURI", "type": "string" },
+      { "internalType": "string", "name": "description", "type": "string" }
     ],
     "name": "createVault",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
@@ -29,8 +29,8 @@ const FACTORY_ABI = [
       { "indexed": true, "internalType": "address", "name": "vault", "type": "address" },
       { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
       { "indexed": false, "internalType": "uint256", "name": "goalAmount", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "deadline", "type": "uint256" },
       { "indexed": false, "internalType": "string", "name": "metadataURI", "type": "string" },
+      { "indexed": false, "internalType": "string", "name": "description", "type": "string" },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "vaultIndex", "type": "uint256" }
     ],
@@ -47,6 +47,7 @@ export default function CreateVaultPage() {
   const { data: receipt, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
 
   // Redirect to vault page after transaction is confirmed
@@ -110,15 +111,11 @@ export default function CreateVaultPage() {
     // Convert goal amount to USDC wei (6 decimals)
     const goalAmountWei = parseUnits(goalAmount, 6);
 
-    // Set deadline to 100 years from now (effectively no deadline)
-    const hundredYearsInSeconds = BigInt(100 * 365 * 24 * 60 * 60);
-    const deadlineTimestamp = BigInt(Math.floor(Date.now() / 1000)) + hundredYearsInSeconds;
-
     console.log('Creating vault with params:', {
       address: FACTORY_ADDRESS,
       goalAmountWei: goalAmountWei.toString(),
-      deadlineTimestamp: deadlineTimestamp.toString(),
       metadataURI: `db://${title}`,
+      description,
       chainId: CHAIN_ID,
     });
 
@@ -127,7 +124,7 @@ export default function CreateVaultPage() {
       address: FACTORY_ADDRESS,
       abi: FACTORY_ABI,
       functionName: 'createVault',
-      args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
+      args: [goalAmountWei, `db://${title}`, description],
     });
   };
 
@@ -142,7 +139,7 @@ export default function CreateVaultPage() {
 
         <h1 className="text-4xl font-bold mb-2">Create Savings Vault</h1>
         <p className="text-gray-600 mb-8">
-          Set your goal, deadline, and start saving together
+          Set your goal and start saving together
         </p>
 
         {writeError && (
@@ -180,6 +177,23 @@ export default function CreateVaultPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="e.g., MacBook Fund, Vacation Savings, New Car"
             />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Describe what you're saving for and why..."
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Tell your story to motivate contributors
+            </p>
           </div>
 
           <div className="mb-6">
@@ -227,7 +241,7 @@ export default function CreateVaultPage() {
           )}
 
           <p className="text-xs text-gray-500 mt-4 text-center">
-            By creating a vault, you agree that funds will be locked until the goal is reached
+            You can withdraw funds once your goal is reached, or smash the vault early at any time
           </p>
         </form>
       </div>

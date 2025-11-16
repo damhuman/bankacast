@@ -170,21 +170,17 @@ async def get_vault(
         else 0
     )
 
-    # TODO: Get current balance and yield from blockchain
-    current_balance = vault.total_contributed
-    yield_earned = 0
-
     return VaultResponse(
         address=vault.address,
         creator=vault.creator,
         goal_amount=vault.goal_amount,
-        deadline=vault.deadline,
         title=vault.title,
         description=vault.description,
         image_url=vault.image_url,
         total_contributed=vault.total_contributed,
-        current_balance=current_balance,
-        yield_earned=yield_earned,
+        current_balance=vault.current_balance,
+        yield_earned=vault.yield_earned,
+        current_apy=vault.current_apy,
         progress=progress,
         contributors=contributors_list,
         status=vault.status,
@@ -226,13 +222,13 @@ async def list_vaults(
                 address=vault.address,
                 creator=vault.creator,
                 goal_amount=vault.goal_amount,
-                deadline=vault.deadline,
                 title=vault.title,
                 description=vault.description,
                 image_url=vault.image_url,
                 total_contributed=vault.total_contributed,
-                current_balance=vault.total_contributed,
-                yield_earned=0,
+                current_balance=vault.current_balance,
+                yield_earned=vault.yield_earned,
+                current_apy=vault.current_apy,
                 progress=progress,
                 contributors=[],
                 status=vault.status,

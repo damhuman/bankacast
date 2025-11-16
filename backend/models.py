@@ -14,7 +14,6 @@ class Vault(Base):
     address = Column(String(42), unique=True, nullable=False, index=True)
     creator = Column(String(42), nullable=False, index=True)
     goal_amount = Column(BigInteger, nullable=False)  # USDC with 6 decimals
-    deadline = Column(BigInteger, nullable=False)  # Unix timestamp
     metadata_uri = Column(String, nullable=False)
 
     # Off-chain metadata
@@ -24,7 +23,10 @@ class Vault(Base):
 
     # Current state
     total_contributed = Column(BigInteger, default=0)
-    status = Column(String(20), default="active", index=True)  # active, completed, expired
+    current_balance = Column(BigInteger, default=0)  # Principal + yield from Aave
+    yield_earned = Column(BigInteger, default=0)  # Yield earned from Aave
+    current_apy = Column(BigInteger, default=0)  # APY in basis points (500 = 5%)
+    status = Column(String(20), default="active", index=True)  # active, completed
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -32,7 +34,6 @@ class Vault(Base):
 
     __table_args__ = (
         Index('idx_creator_status', 'creator', 'status'),
-        Index('idx_deadline', 'deadline'),
     )
 
 

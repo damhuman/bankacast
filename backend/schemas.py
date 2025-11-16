@@ -36,13 +36,13 @@ class VaultResponse(BaseModel):
     address: str
     creator: str
     goal_amount: int
-    deadline: int
     title: Optional[str]
     description: Optional[str]
     image_url: Optional[str]
     total_contributed: int
     current_balance: int = 0
     yield_earned: int = 0
+    current_apy: int = 0  # APY in basis points (500 = 5%)
     progress: int = 0
     contributors: List[ContributorInfo] = []
     status: str

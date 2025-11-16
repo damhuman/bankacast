@@ -28,15 +28,14 @@ contract VaultFactory {
         address indexed vault,
         address indexed creator,
         uint256 goalAmount,
-        uint256 deadline,
         string metadataURI,
+        string description,
         uint256 timestamp,
         uint256 vaultIndex
     );
 
     // ============ Errors ============
 
-    error InvalidDeadline();
     error InvalidGoalAmount();
     error InvalidMetadata();
 
@@ -59,17 +58,16 @@ contract VaultFactory {
     /**
      * @notice Create a new savings vault
      * @param _goalAmount Target amount in USDC (6 decimals)
-     * @param _deadline Unix timestamp when vault expires
-     * @param _metadataURI IPFS hash or metadata reference (title, description, image)
+     * @param _metadataURI DB ID for title
+     * @param _description Detailed description
      * @return vault Address of newly deployed vault
      */
     function createVault(
         uint256 _goalAmount,
-        uint256 _deadline,
-        string calldata _metadataURI
+        string calldata _metadataURI,
+        string calldata _description
     ) external returns (address vault) {
         // Validation
-        if (_deadline <= block.timestamp) revert InvalidDeadline();
         if (_goalAmount == 0) revert InvalidGoalAmount();
         if (bytes(_metadataURI).length == 0) revert InvalidMetadata();
 
@@ -80,8 +78,8 @@ contract VaultFactory {
         Vault(vault).initialize(
             msg.sender, // creator
             _goalAmount,
-            _deadline,
             _metadataURI,
+            _description,
             aavePool,
             usdc
         );
@@ -96,8 +94,8 @@ contract VaultFactory {
             vault,
             msg.sender,
             _goalAmount,
-            _deadline,
             _metadataURI,
+            _description,
             block.timestamp,
             vaultIndex
         );

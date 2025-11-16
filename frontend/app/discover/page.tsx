@@ -16,13 +16,13 @@ interface Vault {
   address: string;
   creator: string;
   goal_amount: number;
-  deadline: number;
   title: string;
   description: string | null;
   image_url: string | null;
   total_contributed: number;
   current_balance: number;
   yield_earned: number;
+  apy: number;
   progress: number;
   contributors: Contributor[];
   status: string;
@@ -56,12 +56,8 @@ export default function DiscoverPage() {
     return (wei / 1e6).toFixed(2);
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString();
-  };
-
-  const isExpired = (deadline: number) => {
-    return deadline * 1000 < Date.now();
+  const formatAPY = (apy: number) => {
+    return (apy / 100).toFixed(2);
   };
 
   return (
@@ -109,16 +105,21 @@ export default function DiscoverPage() {
         {!loading && !error && vaults.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {vaults.map((vault) => {
-              const expired = isExpired(vault.deadline);
               const goalReached = vault.total_contributed >= vault.goal_amount;
+              const isCompleted = vault.status === 'completed';
 
               return (
                 <div
                   key={vault.address}
                   className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition"
                 >
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <h3 className="text-xl font-bold mb-1">{vault.title}</h3>
+                    {vault.description && (
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        {vault.description}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500 truncate">
                       {vault.address}
                     </p>
@@ -132,7 +133,7 @@ export default function DiscoverPage() {
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${vault.progress}%` }}
+                        style={{ width: `${Math.min(vault.progress, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -145,26 +146,32 @@ export default function DiscoverPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Yield Earned</span>
+                      <span className="font-semibold text-green-600">
+                        +${formatAmount(vault.yield_earned)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Aave APY</span>
+                      <span className="font-semibold text-blue-600">
+                        {formatAPY(vault.apy)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Contributors</span>
                       <span className="font-semibold">{vault.contributors.length}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Deadline</span>
-                      <span className={expired ? 'text-red-600 font-semibold' : ''}>
-                        {formatDate(vault.deadline)}
-                      </span>
-                    </div>
                   </div>
 
-                  {goalReached && (
+                  {goalReached && !isCompleted && (
                     <div className="bg-green-50 text-green-800 text-sm px-3 py-2 rounded mb-3">
                       ✅ Goal Reached!
                     </div>
                   )}
 
-                  {expired && !goalReached && (
-                    <div className="bg-red-50 text-red-800 text-sm px-3 py-2 rounded mb-3">
-                      ⏰ Expired
+                  {isCompleted && (
+                    <div className="bg-gray-50 text-gray-800 text-sm px-3 py-2 rounded mb-3">
+                      🎉 Completed
                     </div>
                   )}
 
@@ -175,7 +182,7 @@ export default function DiscoverPage() {
                     >
                       View Details
                     </Link>
-                    {!expired && !goalReached && (
+                    {!isCompleted && (
                       <button
                         className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition"
                         onClick={() => setSelectedVault(vault)}

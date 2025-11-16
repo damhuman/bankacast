@@ -15,8 +15,8 @@ FACTORY_ABI = [
             {"indexed": True, "name": "vault", "type": "address"},
             {"indexed": True, "name": "creator", "type": "address"},
             {"indexed": False, "name": "goalAmount", "type": "uint256"},
-            {"indexed": False, "name": "deadline", "type": "uint256"},
             {"indexed": False, "name": "metadataURI", "type": "string"},
+            {"indexed": False, "name": "description", "type": "string"},
             {"indexed": False, "name": "timestamp", "type": "uint256"},
             {"indexed": False, "name": "vaultIndex", "type": "uint256"}
         ],
@@ -49,8 +49,8 @@ VAULT_ABI = [
     },
     {
         "inputs": [],
-        "name": "deadline",
-        "outputs": [{"name": "", "type": "uint256"}],
+        "name": "description",
+        "outputs": [{"name": "", "type": "string"}],
         "stateMutability": "view",
         "type": "function"
     },
@@ -71,14 +71,31 @@ VAULT_ABI = [
     {
         "inputs": [],
         "name": "getCurrentBalance",
-        "outputs": [{"name": "", "type": "uint256"}],
+        "outputs": [
+            {"name": "principal", "type": "uint256"},
+            {"name": "yield", "type": "uint256"},
+            {"name": "total", "type": "uint256"}
+        ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "getYieldEarned",
-        "outputs": [{"name": "", "type": "uint256"}],
+        "name": "getCurrentAPY",
+        "outputs": [{"name": "apy", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getYieldStats",
+        "outputs": [
+            {"name": "principal", "type": "uint256"},
+            {"name": "currentBalance", "type": "uint256"},
+            {"name": "yieldEarned", "type": "uint256"},
+            {"name": "yieldPercentage", "type": "uint256"},
+            {"name": "currentAPY", "type": "uint256"}
+        ],
         "stateMutability": "view",
         "type": "function"
     },
@@ -143,17 +160,26 @@ class BlockchainService:
             # Read data from contract
             creator = vault_contract.functions.creator().call()
             goal_amount = vault_contract.functions.goalAmount().call()
-            deadline = vault_contract.functions.deadline().call()
             metadata_uri = vault_contract.functions.metadataURI().call()
             total_contributed = vault_contract.functions.totalContributed().call()
 
-            # Try to get current balance and yield (may fail on some vaults)
+            # Get description
             try:
-                current_balance = vault_contract.functions.getCurrentBalance().call()
-                yield_earned = vault_contract.functions.getYieldEarned().call()
+                description = vault_contract.functions.description().call()
+            except Exception:
+                description = None
+
+            # Try to get yield stats (may fail on some vaults)
+            try:
+                yield_stats = vault_contract.functions.getYieldStats().call()
+                # yield_stats returns: (principal, currentBalance, yieldEarned, yieldPercentage, currentAPY)
+                current_balance = yield_stats[1]
+                yield_earned = yield_stats[2]
+                current_apy = yield_stats[4]
             except Exception:
                 current_balance = total_contributed
                 yield_earned = 0
+                current_apy = 0
 
             # Get contributors
             try:
@@ -175,9 +201,6 @@ class BlockchainService:
 
             # Determine status
             status = "active"
-            current_time = self.w3.eth.get_block('latest')['timestamp']
-            if current_time > deadline:
-                status = "expired"
             if total_contributed >= goal_amount:
                 status = "completed"
 
@@ -198,13 +221,13 @@ class BlockchainService:
                 "address": vault_address.lower(),
                 "creator": creator.lower(),
                 "goal_amount": goal_amount,
-                "deadline": deadline,
                 "title": title,
-                "description": None,
+                "description": description,
                 "image_url": None,
                 "total_contributed": total_contributed,
                 "current_balance": current_balance,
                 "yield_earned": yield_earned,
+                "current_apy": current_apy,
                 "progress": progress,
                 "contributors": contributor_list,
                 "status": status,
