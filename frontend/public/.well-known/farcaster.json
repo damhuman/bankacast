@@ -1,0 +1,16 @@
+{
+  "accountAssociation": {
+    "header": "PLACEHOLDER_HEADER",
+    "payload": "PLACEHOLDER_PAYLOAD",
+    "signature": "PLACEHOLDER_SIGNATURE"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Banka",
+    "iconUrl": "https://bankacast.netlify.app/icon.png",
+    "splashImageUrl": "https://bankacast.netlify.app/splash.png",
+    "splashBackgroundColor": "#0052FF",
+    "homeUrl": "https://bankacast.netlify.app",
+    "webhookUrl": "https://bankacast.netlify.app/api/webhook"
+  }
+}
