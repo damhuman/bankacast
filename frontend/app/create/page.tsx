@@ -25,7 +25,7 @@ const FACTORY_ABI = [
 ] as const;
 
 export default function CreateVaultPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
 
   const [title, setTitle] = useState('');
@@ -37,6 +37,12 @@ export default function CreateVaultPage() {
     // Check if wallet is connected
     if (!isConnected) {
       alert('Please connect your wallet first');
+      return;
+    }
+
+    // Check if on correct chain
+    if (chain?.id !== CHAIN_ID) {
+      alert(`Please switch to Base Sepolia network (Chain ID: ${CHAIN_ID}). Current chain: ${chain?.id}`);
       return;
     }
 
@@ -61,7 +67,6 @@ export default function CreateVaultPage() {
       abi: FACTORY_ABI,
       functionName: 'createVault',
       args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
-      chainId: CHAIN_ID,
     });
   };
 
