@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ContributeModal from '@/components/ContributeModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
@@ -32,6 +33,7 @@ export default function DiscoverPage() {
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedVault, setSelectedVault] = useState<Vault | null>(null);
 
   useEffect(() => {
     fetchVaults();
@@ -176,7 +178,7 @@ export default function DiscoverPage() {
                     {!expired && !goalReached && (
                       <button
                         className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition"
-                        onClick={() => alert('Connect wallet to contribute')}
+                        onClick={() => setSelectedVault(vault)}
                       >
                         Contribute
                       </button>
@@ -186,6 +188,16 @@ export default function DiscoverPage() {
               );
             })}
           </div>
+        )}
+
+        {selectedVault && (
+          <ContributeModal
+            vaultAddress={selectedVault.address}
+            vaultTitle={selectedVault.title}
+            goalAmount={selectedVault.goal_amount}
+            totalContributed={selectedVault.total_contributed}
+            onClose={() => setSelectedVault(null)}
+          />
         )}
       </div>
     </main>
