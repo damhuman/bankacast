@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const FRAME_VERSION = 'vNext';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,6 +9,11 @@ export async function GET(req: NextRequest) {
   if (!vaultAddress) {
     return new NextResponse('Missing vault address', { status: 400 });
   }
+
+  // Get the app URL from request headers (works in both dev and prod)
+  const protocol = req.headers.get('x-forwarded-proto') || 'http';
+  const host = req.headers.get('host') || 'localhost:3001';
+  const APP_URL = `${protocol}://${host}`;
 
   // Fetch vault data from backend
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
