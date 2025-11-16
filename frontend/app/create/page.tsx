@@ -61,6 +61,7 @@ export default function CreateVaultPage() {
         abi: FACTORY_ABI,
         functionName: 'createVault',
         args: [goalAmountWei, deadlineTimestamp, `db://${title}`],
+        chainId: 84532, // Base Sepolia
       });
 
       setSuccess('Transaction submitted! Check your wallet...');
