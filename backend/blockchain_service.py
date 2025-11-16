@@ -25,7 +25,7 @@ FACTORY_ABI = [
     },
     {
         "inputs": [],
-        "name": "allVaults",
+        "name": "getAllVaults",
         "outputs": [{"name": "", "type": "address[]"}],
         "stateMutability": "view",
         "type": "function"
@@ -218,9 +218,9 @@ class BlockchainService:
     def get_all_vaults(self) -> List[str]:
         """Get all vault addresses from factory."""
         try:
-            # This requires Factory contract to have allVaults() function
-            # If not available, would need to parse VaultCreated events
-            vaults = self.factory_contract.functions.allVaults().call()
+            # Get all vaults using getAllVaults()
+            vaults = self.factory_contract.functions.getAllVaults().call()
+            print(f"Total vaults on chain: {len(vaults)}")
             return [v.lower() for v in vaults]
         except Exception as e:
             print(f"Error getting all vaults: {e}")
