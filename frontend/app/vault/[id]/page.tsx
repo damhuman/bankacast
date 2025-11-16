@@ -1,11 +1,9 @@
 'use client';
 
-import { use } from 'react';
-
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
 
-export default function VaultPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function VaultPage({ params }: { params: { id: string } }) {
+  const { id } = params;
 
   const frameUrl = `${APP_URL}/api/frame?vault=${id}`;
   const shareText = `Check out this savings vault on Banka!\n\n${frameUrl}`;
