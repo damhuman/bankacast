@@ -24,6 +24,11 @@ Banka enables groups to pool funds for shared or individual goals through Farcas
 
 ```
 banka/
+├── docs/               # 📚 All documentation
+│   ├── team/          # Team guides and sprint plans
+│   ├── product/       # Product requirements and roadmaps
+│   └── README.md      # Documentation index
+│
 ├── contracts/          # ✅ Solidity smart contracts (Foundry)
 │   ├── src/
 │   │   ├── Vault.sol           # Individual vault with Aave integration
@@ -42,9 +47,15 @@ banka/
 │   ├── package.json
 │   └── README.md
 │
-├── PRD.md              # Full Product Requirements Document
-├── MVP_SPECS.md        # Minimal MVP specifications
-└── GETTING_STARTED.md  # Development guide
+├── scripts/            # 🔧 Automation scripts
+│   ├── quickstart.sh           # Automated setup
+│   └── stop.sh                 # Stop all services
+│
+├── assets/             # 🎨 Media files
+│   └── logo.png
+│
+├── CLAUDE.md           # AI assistant instructions
+└── README.md           # This file
 ```
 
 ---
@@ -53,7 +64,7 @@ banka/
 
 ```bash
 # Автоматичний запуск усього stack
-./QUICKSTART.sh
+./scripts/quickstart.sh
 ```
 
 Це запустить:
@@ -66,7 +77,7 @@ banka/
 2. Додай в `frontend/.env.local`
 3. Deploy contracts на Base Sepolia
 
-**Детальна інструкція:** [START.md](START.md)
+**Детальна інструкція:** [docs/team/SPRINT_PLAN.md](docs/team/SPRINT_PLAN.md)
 
 ---
 
@@ -170,9 +181,14 @@ npm run dev  # http://localhost:3000
 
 ## 📖 Documentation
 
-- **[PRD.md](PRD.md)** - Full product requirements document with business goals, user stories, success metrics
-- **[MVP_SPECS.md](MVP_SPECS.md)** - Detailed technical specifications with code examples
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Step-by-step development guide
+### Main Documentation
+- **[docs/README.md](docs/README.md)** - Documentation index and navigation
+- **[docs/team/TEAM_GUIDE.md](docs/team/TEAM_GUIDE.md)** - Comprehensive Web3 onboarding guide for team
+- **[docs/team/SPRINT_PLAN.md](docs/team/SPRINT_PLAN.md)** - 3-week sprint plan with PRD, tasks, and ZK integration
+- **[docs/product/ETH_SUPPORT_PLAN.md](docs/product/ETH_SUPPORT_PLAN.md)** - Future ETH support roadmap
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant instructions
+
+### Technical Documentation
 - **[contracts/README.md](contracts/README.md)** - Smart contracts documentation
 - **[backend/README.md](backend/README.md)** - Backend API documentation
 - **[frontend/README.md](frontend/README.md)** - Frontend setup guide

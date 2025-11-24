@@ -90,10 +90,10 @@ npx tsc --noEmit
 ### Full Stack
 ```bash
 # Automated setup (from root)
-./QUICKSTART.sh
+./scripts/quickstart.sh
 
 # Stop all services
-./STOP.sh
+./scripts/stop.sh
 ```
 
 ## Key Technical Details
