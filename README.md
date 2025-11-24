@@ -1,22 +1,63 @@
-# Banka 💰
+# EthBanka 🇺🇦
 
-Social savings vaults with automated yield generation on Base blockchain.
+**An easy way to create donation vaults in USDC on Base network with automatic AAVE yield generation during fundraising.**
+
+Built at **Lviv.ETH** | Demo: [bankacast.netlify.app](https://bankacast.netlify.app/) | Contact: kozak.eth
 
 **Status:** MVP Development Complete ✅
 
 ---
 
-## 🎯 What is Banka?
+## 🎯 The Problem
 
-Banka enables groups to pool funds for shared or individual goals through Farcaster Frames on Base L2. The platform combines social proof mechanisms of crowdfunding with automated DeFi yield generation.
+**Fundraising is essential in 2025 in Ukraine.**
+
+Current fundraising methods have limitations:
+- 🏦 **МоноБанка** - UAH only, bank dependencies, no yield generation
+- 💳 **Straight to wallet** (e.g. sternenko.eth) - No transparency, progress tracking, or social proof
+- 🌍 **Traditional platforms** (GoFundMe) - 5-10% fees, limited crypto support, slow payouts
+
+---
+
+## ✨ Our Solution: EthBanka
+
+Create transparent, yield-generating donation vaults on Base blockchain for Ukrainian humanitarian, military, and community needs.
 
 ### Core Features
 
-- 🎯 **Goal-Based Vaults** - Create savings vaults with target amounts and deadlines
-- 💰 **Auto Yield** - Deposits automatically generate yield through Aave V3
-- 👥 **Social Sharing** - Share vaults as Farcaster Frames for one-click contributions
+- 🎯 **Donation Vaults** - Create fundraising vaults with goals, deadlines, and full transparency
+- 💰 **Auto Yield via AAVE** - Donations automatically earn 3-8% APY while fundraising
+- 💵 **USDC on Base** (MVP) - Fast, cheap ($0.01 avg), globally accessible donations
+  - *Coming soon: ETH, USDT, DAI support*
+- 📊 **Real-time Progress** - Contributors, yield earned, and goal tracking
+- 👥 **Social Sharing** - Share vaults as Farcaster Frames for viral reach
 - 🔒 **Trustless** - Smart contracts ensure funds are safe and transparent
-- ⚡ **Base L2** - Cheap transactions (<$0.10 avg gas cost)
+- ⚡ **Smash Vault Early** - Creator can withdraw before deadline if urgent
+
+---
+
+## 🎯 Use Cases
+
+### Ukrainian Fundraising
+- 🚁 **Drone Fundraising** - Volunteers raise funds for military drones with full transparency
+- 🏥 **Medical Aid** - Hospitals collect donations for equipment and supplies
+- 🛡️ **Military Equipment** - Units fundraise for tactical gear and vehicles
+- 🏠 **Humanitarian Aid** - NGOs raise funds for displaced families
+- 🔧 **Infrastructure Repair** - Communities pool funds for rebuilding
+
+### General Crowdfunding
+- 🎉 **Group Gifts** - Friends collect for birthdays, weddings, celebrations
+- 🏫 **Community Projects** - Local initiatives with transparent funding
+- 🎓 **Scholarships** - Educational funding with milestone-based goals
+- 🌳 **Environmental** - Tree planting, cleanup projects
+- 🤝 **Charity Drives** - Transparent fundraising for causes
+
+**Why EthBanka vs МоноБанка?**
+- ✅ Global accessibility (not just UAH)
+- ✅ Automatic yield generation (funds work for you)
+- ✅ Full transparency on-chain
+- ✅ No bank intermediaries
+- ✅ Lower fees (~$0.01 vs %)
 
 ---
 
@@ -181,6 +222,9 @@ npm run dev  # http://localhost:3000
 
 ## 📖 Documentation
 
+### Pitch & Overview
+- **[📊 Lviv.ETH Pitch Deck](docs/LVIV_ETH_PITCH.pdf)** - Full presentation from Lviv.ETH hackathon
+
 ### Main Documentation
 - **[docs/README.md](docs/README.md)** - Documentation index and navigation
 - **[docs/team/TEAM_GUIDE.md](docs/team/TEAM_GUIDE.md)** - Comprehensive Web3 onboarding guide for team
@@ -238,22 +282,24 @@ npm run dev  # http://localhost:3000
 ## 🎨 User Flow
 
 1. **Create Vault**
-   - User visits app → Creates vault (title, goal, deadline)
-   - Smart contract deployed via VaultFactory
-   - Receives shareable Farcaster Frame link
+   - Creator connects wallet → Creates donation vault (title, goal, deadline)
+   - Smart contract deployed via VaultFactory (~$0.01 gas)
+   - Receives shareable link + Farcaster Frame
 
 2. **Share & Contribute**
-   - Creator shares Frame in Farcaster feed
-   - Friends see progress bar, contributors, social proof
-   - One-click contribute (USDC automatically deposited to Aave)
+   - Share Frame in Farcaster, Twitter, Telegram
+   - Donors see: Progress, Goal, Yield Earned, Contributors
+   - One-click contribute (USDC automatically deposited to Aave V3)
 
-3. **Earn Yield**
-   - Funds generate passive yield (3-8% APY)
+3. **Track & Earn**
    - Real-time progress updates via WebSocket
+   - Funds generate passive yield (3-8% APY) during fundraising
+   - Full transparency: All contributions visible on-chain
 
-4. **Withdraw**
-   - When 100% goal reached → Creator withdraws (principal + yield)
-   - If deadline passes → Creator can extend or return funds
+4. **Withdraw or Smash Early**
+   - **Goal reached:** Creator withdraws principal + yield
+   - **Urgent need:** "Smash Vault Early" to withdraw before deadline
+   - **Expired:** Extend deadline or return funds to contributors
 
 ---
 

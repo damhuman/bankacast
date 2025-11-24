@@ -7,36 +7,76 @@
 ## Product Requirements Document (PRD)
 
 ### Vision
-Banka - найпростіший спосіб зібрати гроші разом з друзями через соцмережі з privacy гарантіями. Створи ціль, поділись в Farcaster, отримуй contributions + автоматичний yield з DeFi. **Zero-knowledge докази забезпечують конфіденційність contributions.**
+**EthBanka** - найпростіший спосіб створювати donation vaults в USDC на Base з автоматичною генерацією yield через AAVE під час fundraising.
+
+**Fundraising is essential in 2025 in Ukraine.** EthBanka надає прозорий, ефективний спосіб збирати кошти для військових, гуманітарних та громадських потреб з повною прозорістю та автоматичним примноженням коштів через DeFi.
 
 ### Problem
-- Існуючі crowdfunding платформи (GoFundMe) беруть 5-10% комісії
-- Групові збори грошей через Venmo/PayPal - нема прозорості, хто скільки вніс
-- DeFi savings складні для звичайних людей
-- Соціальні мережі (Farcaster) не мають native фінансових інструментів
-- **Публічні contributions на blockchain - всі бачать хто і скільки вніс (privacy проблема)**
+
+**Current fundraising methods in Ukraine:**
+- 🏦 **МоноБанка** - UAH only, залежність від банків, немає yield generation, обмежена глобальна доступність
+- 💳 **Straight to wallet** (e.g. sternenko.eth) - Немає transparency, progress tracking, social proof механізмів
+- 🌍 **Traditional platforms** (GoFundMe, Patreon) - 5-10% комісії, обмежена crypto підтримка, slow payouts, KYC requirements
+
+**Additional problems:**
+- Групові збори через Venmo/PayPal - нема прозорості
+- DeFi yields складні для використання
+- **Privacy проблема** - публічні contributions на blockchain (всі бачать хто і скільки вніс)
 
 ### Solution
-Платформа на Base blockchain + Aztec privacy layer де можна:
-1. Створити savings vault за 30 секунд
-2. Поділитись в Farcaster Frame (one-click contribute)
-3. Автоматично заробляти відсотки через Aave V3
-4. Повна прозорість contributions on-chain
-5. **Private contributions через Aztec/Noir ZK proofs (опціонально)**
+
+**EthBanka** - платформа на Base blockchain з Aztec privacy layer:
+
+1. ✅ **Easy Vault Creation** - Створи donation vault за 30 секунд
+2. 🇺🇦 **USDC on Base** - Глобально доступні донати з мінімальними fees (~$0.01)
+3. 💰 **Automatic AAVE Yield** - Кошти автоматично генерують 3-8% APY під час збору
+4. 📊 **Full Transparency** - Real-time progress, contributors, yield earned
+5. 👥 **Farcaster Frames** - One-click contributions прямо в social feed
+6. ⚡ **Smash Vault Early** - Withdraw коштів до deadline якщо urgent need
+7. 🔒 **Optional Privacy** - Private contributions через Aztec/Noir ZK proofs
 
 ### Target Audience (MVP)
 
-**Primary:** Farcaster early adopters (crypto-native users)
-- Вік: 25-40
-- Вже мають crypto wallet
-- Активні в crypto communities
-- Готові тестувати нові продукти
+**Primary: Ukrainian Fundraisers & Volunteers**
+- Волонтери які збирають на військові потреби (дрони, екіпіровка)
+- NGOs та благодійні організації
+- Медичні заклади (обладнання, ліки)
+- Громадські ініціативи (відновлення інфраструктури)
+- Crypto-savvy українці з доступом до USDC
 
-**Use Cases:**
-- Group gift для друга (birthday, wedding)
-- Team event funding (conference trip)
-- Charity fundraising
-- Personal savings goal з accountability
+**Secondary: Crypto Early Adopters**
+- Farcaster community (crypto-native users)
+- Вік: 25-45
+- Вже мають crypto wallet та розуміють Base/USDC
+- Активні в Base та Aave ecosystems
+
+**Geographic Focus:**
+- 🇺🇦 Ukraine (primary - fundraising needs)
+- 🌍 Global (diaspora supporting Ukraine, general crypto users)
+
+### Use Cases
+
+**Ukrainian Fundraising (Priority):**
+- 🚁 **Drone Fundraising** - Volunteers collect for FPV drones, reconnaissance UAVs ($500-5000 per goal)
+- 🏥 **Medical Equipment** - Hospitals raise for generators, ultrasound machines, ambulances
+- 🛡️ **Military Gear** - Tactical equipment, body armor, night vision for units
+- 🏠 **Humanitarian Aid** - Housing for displaced families, heating, food supplies
+- 🔧 **Infrastructure Repair** - Schools, hospitals, power grids restoration
+- 🚑 **Evacuation Transport** - Vans and vehicles for frontline evacuations
+
+**General Crowdfunding:**
+- 🎉 **Group Gifts** - Birthday, wedding, celebration gifts з друзями
+- 🏫 **Community Projects** - Local initiatives, playgrounds, community centers
+- 🎓 **Education** - Scholarships, student support, course funding
+- 🌳 **Environmental** - Tree planting, park cleanup, conservation
+- 🤝 **Charity Drives** - Animal shelters, orphanages, elderly care
+
+**Why EthBanka?**
+- МоноБанка only works in Ukraine (UAH), EthBanka = global USDC
+- No bank dependency or censorship risk
+- Funds earn yield automatically (3-8% APY)
+- Full transparency on-chain
+- Lower fees (~$0.01 vs bank percentages)
 
 ### User Stories
 
@@ -141,20 +181,28 @@ Banka - найпростіший спосіб зібрати гроші разо
 
 ### Out of Scope (Defer to Later)
 
-**V2 Features:**
-- ETH, USDT, DAI support
-- User profiles з history
-- Vault categories
-- Advanced analytics
-- Mobile app
+**V2 Features (High Priority):**
+- 💰 **Multi-Token Support** - ETH, USDT, DAI, USDC (highest priority!)
+  - Allows users to donate in their preferred currency
+  - Different Aave V3 pools for different tokens
+  - Token selector in UI
+- User profiles з vault history
+- Vault categories (Military, Medical, Humanitarian)
+- Recurring contributions (monthly donations)
+
+**V2 Features (Medium Priority):**
+- Advanced analytics dashboard
+- Email/Push notifications
+- Vault templates для popular use cases
+- Mobile app (React Native)
 - Mainnet deployment
 
-**Future Ideas:**
+**Future Ideas (Low Priority):**
 - DAO governance
-- Cross-chain (Optimism, Arbitrum)
-- NFT rewards
+- Cross-chain support (Optimism, Arbitrum)
+- NFT rewards для top contributors
 - Integration з Lens Protocol
-- Vault templates
+- Fiat on-ramp (credit card donations)
 
 ### Risks & Mitigations
 
