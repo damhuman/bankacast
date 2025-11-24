@@ -94,7 +94,7 @@
 
 ### Core Features (MVP)
 
-**Must Have:**
+**Must Have - Phase 1 (USDC):**
 1. Create Vault (title, goal amount, deadline)
 2. Contribute to Vault (USDC only)
 3. Withdraw when goal reached (creator only)
@@ -103,7 +103,17 @@
 6. Progress tracking (bar + amount)
 7. Vault list page (home)
 8. Vault detail page
-9. **Private contributions через Aztec/Noir (toggle option)**
+
+**Must Have - Phase 2 (Multi-Token) - TECHNICAL PRIORITY #1:**
+9. **Multi-Token Support: ETH, USDT, DAI + USDC**
+   - Token selector in vault creation
+   - Support multiple Aave V3 pools (ETH, USDT, DAI, USDC)
+   - Dynamic APY display per token
+   - Currency conversion/display logic
+   - Update smart contracts to accept multiple ERC20s
+
+**Should Have - Phase 3 (Privacy):**
+10. **Private contributions через Aztec/Noir (toggle option)**
 
 **Should Have:**
 - Real-time updates (WebSocket)
@@ -264,12 +274,13 @@
 
 ---
 
-## Week 1: Foundation
+## Week 1: Foundation (USDC Only)
 
 ### Антон
-**Smart Contracts**
-- Vault.sol базовий (deposit, withdraw, goal tracking)
+**Smart Contracts - USDC Foundation**
+- Vault.sol базовий (deposit, withdraw, goal tracking) для USDC
 - VaultFactory.sol мінімальний (create vault)
+- Aave V3 USDC pool integration
 - Тести для core функцій
 - Deploy на Base Sepolia
 
@@ -277,6 +288,7 @@
 - FastAPI setup з PostgreSQL
 - API endpoints: GET /vaults, POST /vault, GET /vault/{id}
 - Event listener базовий (слухати VaultCreated)
+- Database schema для single token (USDC)
 
 ### Андрій
 - Setup Linear/Notion для task tracking
@@ -292,138 +304,154 @@
 
 ---
 
-## Week 2: MVP Build
+## Week 2: Multi-Token Integration (ETH, USDT, DAI) - PRIORITY #1
 
 ### Антон
-**Smart Contracts**
-- Aave V3 integration (deposit в Aave при contribution)
-- Withdrawal з yield calculation
-- Deadline та goal check логіка
+**Smart Contracts - Multi-Token Support**
+- Refactor Vault.sol для підтримки multiple ERC20 tokens
+- Add token address parameter до vault creation
+- Integrate Aave V3 pools для ETH, USDT, DAI (not just USDC)
+- Dynamic yield calculation per token type
+- Update VaultFactory.sol для token selection
+- Testing з різними токенами
+- Deploy updated contracts на Base Sepolia
 
-**Backend**
-- Event listener для Contributed events
-- WebSocket базовий для live updates
-- Contributed events зберігати в DB
+**Backend - Multi-Token Database**
+- Update database schema: add `token_address` та `token_symbol` fields
+- API endpoints update: token parameter в vault creation
+- Event listener: track different token types
+- Add token metadata (symbol, decimals, Aave pool addresses)
+- Currency conversion logic (optional: display in USD equivalent)
 
-**Frontend**
+**Frontend - Token Selector**
 - Next.js setup з Privy wallet
-- Home page: список vaults з VaultCard компонентом
-- Create vault page з формою
-- Vault detail page з progress bar
+- Create vault page: Token selector dropdown (USDC, ETH, USDT, DAI)
+- Display token-specific APY від Aave
+- Home page: список vaults з token indicator
+- Vault detail page: show token type + progress
 
 ### Андрій
-- Manual testing всіх endpoints API
-- Testing smart contracts на Sepolia (create vault, contribute, withdraw)
+- Manual testing всіх endpoints API з різними токенами
+- Testing smart contracts на Sepolia (ETH, USDT, DAI, USDC vaults)
 - Bug tracking в Linear
-- Testnet USDC роздати тестерам
+- Testnet tokens distribution (ETH, USDT, DAI, USDC) для testers
+- Verify Aave yield працює для всіх токенів
 
 ### Каріна
-- Landing page в Framer (1 сторінка: hero, how it works, CTA)
-- Explainer text: що таке Banka за 3 параграфи
-- Social media plan (3 пости на тиждень)
-- Підготувати Welcome message для Discord
+- Landing page в Framer з multi-token messaging
+- Token comparison table (USDC vs ETH vs USDT vs DAI features)
+- Social media plan з emphasis на token flexibility
+- Explainer: "Donate in your preferred currency"
 
 ---
 
-## Week 3: Launch Prep + ZK Integration
+## Week 3: Farcaster Frames + Polish + Deployment
 
 ### Антон
-**Aztec/Noir Integration (PRIORITY)**
-- Setup Aztec Sandbox locally
-- Написати Noir circuit для private contribution proof
-  - Verify contribution amount без reveal identity
-  - Prove sum of contributions matches vault total
-- Private contribution contract на Solidity (verify ZK proofs)
-- Frontend toggle "Make contribution private"
-- Generate та submit ZK proof при private contribution
-- Testing: 2 private contributions proof of concept
+**Farcaster Frames Integration (PRIORITY)**
+- Frame metadata endpoint для vault sharing
+- Frame image generation з progress bar та token display
+- Contribute action endpoint з multi-token support
+- Transaction signing flow для different tokens
+- QR code generation з vault address
+- Testing Frames в Warpcast
 
-**Frontend (if time permits)**
-- Contribution form на vault detail page
-- Basic error handling (no balance, wrong network)
+**Frontend Polish**
+- Contribution form на vault detail page (all tokens)
+- Token-specific balance checks та error handling
+- Multi-token wallet approval flow
 - Deploy backend на Railway
 - Deploy frontend на Vercel
 - Responsive mobile view
+- Loading states та error messages
 
-**Farcaster Frame (if time permits)**
-- Frame metadata для vault share
-- Frame image з progress bar
-- Contribute button в Frame
+**Backend Finalization**
+- WebSocket для live updates (all tokens)
+- Event listener stability improvements
+- API documentation (Swagger) з multi-token examples
 
 ### Андрій
-- Setup Aztec Sandbox testing environment
-- Testing ZK proof generation (manual test з Антоном)
-- Verify private contributions працюють (proof of concept)
-- Performance testing: ZK proof generation time
-- Internal testing: 5 людей протестувати повний flow
-- Збирати bugs та feedback в документ
-- Deployment checklist (ENV vars, DB, contracts, Aztec sandbox)
+- Internal testing: 5-7 людей протестувати повний flow з різними токенами
+- Create test scenarios для кожного токену (ETH, USDT, DAI, USDC)
+- Verify Farcaster Frames працюють correctly
+- Збирати bugs та feedback в structured format
+- Deployment checklist (ENV vars, DB, contracts addresses для всіх токенів)
+- Performance testing: transaction times, gas costs per token
+- Verify Aave yields для всіх токенів
 
 ### Каріна
-- Дослідити Aztec community (Discord, Twitter)
-- Написати explainer "Чому privacy важлива для crowdfunding" (1 параграф)
-- User guide: як створити vault, як зробити contribution (public + private)
-- Beta tester onboarding з акцентом на ZK feature
-- Пости для launch: Twitter thread з emphasis на privacy (5-7 твітів)
-- Farcaster launch post: "Перший privacy-preserving crowdfunding"
-- Outreach до Aztec community для partnership/support
+- User guide: як створити vault в різних токенах
+- Multi-token benefits explainer (ETH vs USDC vs USDT vs DAI)
+- Beta tester onboarding materials
+- Launch Twitter thread (5-7 tweets) з emphasis на flexibility
+- Farcaster launch post: "Donate in YOUR preferred currency"
+- Token selection guide: який токен обрати для різних use cases
+- Outreach до Ukrainian volunteer communities
 
 ---
 
 ## Deliverables (End of Week 3)
 
-**Tech**
-- Smart contracts на Base Sepolia
-- **Noir circuits для private contributions**
-- **ZK proof verification contract**
-- **Aztec Sandbox working locally**
-- Working app на Vercel
-- Backend на Railway
-- 5 test vaults створено (1-2 з private contributions)
+**Tech - Multi-Token Support**
+- Smart contracts на Base Sepolia (ETH, USDT, DAI, USDC support)
+- **4 Aave V3 pool integrations working** (ETH, USDT, DAI, USDC)
+- **Multi-token VaultFactory deployed**
+- Working app на Vercel з token selector
+- Backend на Railway з multi-token tracking
+- Test vaults створено для кожного токену:
+  - 2 USDC vaults
+  - 2 ETH vaults
+  - 1 USDT vault
+  - 1 DAI vault
 
 **Product**
-- Landing page live з privacy messaging
-- User guide document (public + private flow)
-- FAQ готове з ZK privacy section
+- Landing page live з multi-token messaging
+- User guide document (how to choose token)
+- Token comparison guide (features, APY, use cases)
+- FAQ з multi-token section
 
 **Community**
 - 10-15 beta testers залучені
 - Twitter + Farcaster active
-- Launch announcement готовий з privacy angle
-- **Aztec community outreach initiated**
+- Launch announcement: "Donate in YOUR currency"
+- Ukrainian volunteer communities outreach
 
-**Proof of Concept**
-- **Мінімум 2 успішні private contributions через ZK proofs**
-- **ZK proof generation <10 seconds**
-- **Demo video: private contribution flow**
+**Feature Validation**
+- ✅ All 4 tokens working end-to-end
+- ✅ Aave yield generation verified for each token
+- ✅ Farcaster Frames support all tokens
+- ✅ Gas costs compared across tokens
+- ✅ Demo video: multi-token flow
 
 ---
 
 ## Success Criteria
 
-**Must Have**
-- User can create vault
-- User can contribute to vault (public)
-- **User can contribute to vault (private через Aztec/Noir)**
-- Progress bar shows correctly
+**Must Have (Week 1-3)**
+- User can create vault в будь-якому токені (ETH, USDT, DAI, USDC)
+- User can contribute to vault в тому ж токені
+- **All 4 tokens work end-to-end** (create, contribute, withdraw)
+- **Aave yield генерується для всіх 4 токенів**
+- Progress bar shows correctly з token indicator
 - Can share vault via Farcaster Frame
-- Aave yield генерується
-- **ZK proof generates successfully**
-- **Private contribution verifies on-chain**
+- Token selector UI працює інтуїтивно
+- **Different APY displayed per token type**
 
-**Nice to Have**
+**Nice to Have (Week 3)**
 - Real-time updates через WebSocket
 - Mobile responsive
 - Error messages зрозумілі
-- Farcaster Frame integration
+- Gas cost comparison between tokens
+- USD value display (optional)
 
-**Defer to V2**
-- Multi-token support
-- User profiles
-- Notifications
-- Analytics dashboard
+**Defer to Phase 3 (Post-Launch)**
+- **Private contributions через Aztec/Noir** (moved from Week 3)
+- User profiles з vault history
+- Email/Push notifications
+- Advanced analytics dashboard
+- Vault categories (Military, Medical, Humanitarian)
+- Recurring contributions
 - Full Aztec mainnet deployment
-- Private vault creation (not just contributions)
 
 ---
 
@@ -494,84 +522,157 @@
 - Aztec Sandbox: Free (local development)
 - Total: ~$35
 
-**Marketing Messaging (оновлено для ZK):**
-- "Save together, earn together, privately"
-- "Перший privacy-preserving crowdfunding on blockchain"
-- "Zero-knowledge contributions - ваші donations залишаються конфіденційними"
-- "DeFi savings meets privacy"
+**Marketing Messaging (оновлено для Multi-Token):**
+- "Donate in YOUR preferred currency - ETH, USDC, USDT, or DAI"
+- "Transparent fundraising with automatic yield generation"
+- "Global donations made easy - choose your token"
+- "Ukrainian fundraising powered by DeFi"
 
 ---
 
-## Technical Deep Dive: Aztec/Noir Integration
+## Technical Deep Dive: Multi-Token Integration
 
-### Week 3 ZK Implementation Plan (для Антона)
+### Week 2 Implementation Plan (для Антона)
 
-**Day 1-2: Setup & Learning**
-- Встановити Aztec Sandbox: `bash -i <(curl -s install.aztec.network)`
-- Ознайомитись з Noir syntax: https://noir-lang.org/docs
-- Пройти Aztec tutorial: https://docs.aztec.network/tutorials
-- Вивчити приклади ZK circuits
+**Day 1-2: Research & Architecture**
+- Дослідити Aave V3 token addresses на Base Sepolia:
+  - USDC: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
+  - WETH (Wrapped ETH): Check Aave docs
+  - USDT: Check Aave docs
+  - DAI: Check Aave docs
+- Research Aave V3 Pool contract methods для different tokens
+- Design multi-token Vault.sol architecture
+- Plan database schema changes
 
-**Day 3-4: Noir Circuit Development**
-```
-Мета: Довести що contribution валідна без reveal contributor address
-
-Inputs (private):
-- contributor_address: Field
-- contribution_amount: Field
-- vault_address: Field
-
-Inputs (public):
-- vault_total: Field
-- merkle_root: Field
-
-Circuit логіка:
-1. Verify contribution_amount > 0
-2. Verify contributor має sufficient balance (off-chain check)
-3. Generate nullifier hash(contributor_address, vault_address)
-4. Compute new vault_total
-5. Verify merkle proof для anonymity set
-```
-
-**Day 5: Smart Contract Integration**
+**Day 3-4: Smart Contract Development**
 ```solidity
-contract PrivateContribution {
-    function verifyAndContribute(
-        bytes calldata proof,
-        uint256 vaultTotal,
-        bytes32 nullifier
-    ) external {
-        // Verify ZK proof
-        require(verifier.verify(proof), "Invalid proof");
+// Updated Vault.sol structure
+contract Vault is Initializable {
+    address public tokenAddress;      // ERC20 token address (USDC/WETH/USDT/DAI)
+    IPool public aavePool;            // Aave V3 Pool
+    uint256 public goalAmount;
+    uint256 public deadline;
 
-        // Check nullifier not used (no double contributions)
-        require(!usedNullifiers[nullifier], "Already contributed");
+    function initialize(
+        address _creator,
+        address _tokenAddress,    // NEW: token parameter
+        uint256 _goalAmount,
+        uint256 _deadline
+    ) external initializer {
+        tokenAddress = _tokenAddress;
+        // ... rest of initialization
+    }
 
-        // Update vault
-        vault.contribute(msg.sender, hiddenAmount);
-        usedNullifiers[nullifier] = true;
+    function contribute(uint256 amount) external {
+        // Transfer token від contributor
+        IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
+
+        // Approve Aave
+        IERC20(tokenAddress).approve(address(aavePool), amount);
+
+        // Supply до Aave (automatically detects token type)
+        aavePool.supply(tokenAddress, amount, address(this), 0);
+
+        // Update tracking
+        totalContributed += amount;
+    }
+}
+
+// Updated VaultFactory.sol
+contract VaultFactory {
+    function createVault(
+        address tokenAddress,     // NEW: token selector
+        uint256 goalAmount,
+        uint256 deadline
+    ) external returns (address) {
+        // Clone vault implementation
+        address vault = Clones.clone(vaultImplementation);
+
+        // Initialize with token address
+        Vault(vault).initialize(msg.sender, tokenAddress, goalAmount, deadline);
+
+        emit VaultCreated(vault, msg.sender, tokenAddress, goalAmount);
+        return vault;
     }
 }
 ```
 
-**Day 6-7: Frontend Integration & Testing**
-- Generate proof client-side (noir.js або wasm)
-- Submit proof + public inputs до contract
-- UI toggle: "Make contribution private"
-- Manual testing з 2-3 test cases
+**Day 5-6: Backend Integration**
+```python
+# Updated database schema
+class Vault(Base):
+    __tablename__ = "vaults"
+
+    address = Column(String, primary_key=True)
+    creator = Column(String)
+    token_address = Column(String)      # NEW
+    token_symbol = Column(String)       # NEW: ETH, USDC, USDT, DAI
+    goal_amount = Column(Numeric)
+    total_contributed = Column(Numeric)
+
+# Token metadata constants
+SUPPORTED_TOKENS = {
+    "0x036CbD53842c5426634e7929541eC2318f3dCF7e": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "aave_pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b"
+    },
+    # Add WETH, USDT, DAI mappings
+}
+
+# API endpoints
+@app.post("/vaults")
+async def create_vault(
+    token_address: str,     # NEW: require token selection
+    goal_amount: float,
+    deadline: int
+):
+    # Validate token is supported
+    if token_address not in SUPPORTED_TOKENS:
+        raise HTTPException(400, "Token not supported")
+    # ...
+```
+
+**Day 7: Frontend Token Selector**
+```typescript
+// Token selector component
+const TOKENS = [
+  { address: "0x036Cbd...", symbol: "USDC", icon: "/usdc.png", apy: "5.2%" },
+  { address: "0xWETH...", symbol: "ETH", icon: "/eth.png", apy: "3.8%" },
+  { address: "0xUSDT...", symbol: "USDT", icon: "/usdt.png", apy: "4.5%" },
+  { address: "0xDAI...", symbol: "DAI", icon: "/dai.png", apy: "4.1%" },
+];
+
+function CreateVaultForm() {
+  const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
+
+  return (
+    <select onChange={(e) => setSelectedToken(TOKENS[e.target.value])}>
+      {TOKENS.map(token => (
+        <option value={token.address}>
+          {token.symbol} - {token.apy} APY
+        </option>
+      ))}
+    </select>
+  );
+}
+```
 
 **Resources:**
-- Aztec Docs: https://docs.aztec.network
-- Noir Lang: https://noir-lang.org
-- Aztec Discord для питань
-- Example circuits: https://github.com/AztecProtocol/aztec-packages/tree/master/noir-projects
+- Aave V3 Docs: https://docs.aave.com/developers/core-contracts/pool
+- Base Token Addresses: https://docs.base.org/tokens
+- ERC20 Interface: OpenZeppelin docs
+- Multi-token examples: Check Aave GitHub
 
-**Fallback Plan:**
-Якщо Aztec integration занадто складна за тиждень:
-- Використати простий commitment scheme (hash-based)
-- Contributor commits hash(address, amount, secret)
-- Reveals secret при withdrawal
-- Не повний ZK, але proof of concept для privacy
+**Testing Checklist:**
+- ✅ Create vault in USDC
+- ✅ Create vault in ETH (WETH)
+- ✅ Create vault in USDT
+- ✅ Create vault in DAI
+- ✅ Contribute to each token type
+- ✅ Verify Aave yield for each
+- ✅ Withdraw with yield for each
+- ✅ Gas cost comparison
 
 ---
 

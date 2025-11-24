@@ -27,8 +27,9 @@ Create transparent, yield-generating donation vaults on Base blockchain for Ukra
 
 - 🎯 **Donation Vaults** - Create fundraising vaults with goals, deadlines, and full transparency
 - 💰 **Auto Yield via AAVE** - Donations automatically earn 3-8% APY while fundraising
-- 💵 **USDC on Base** (MVP) - Fast, cheap ($0.01 avg), globally accessible donations
-  - *Coming soon: ETH, USDT, DAI support*
+- 💵 **Multi-Token Support** - Donate in your preferred currency
+  - ✅ **USDC** (stable, 5% APY)
+  - 🔄 **ETH, USDT, DAI** - In active development (Week 2 priority!)
 - 📊 **Real-time Progress** - Contributors, yield earned, and goal tracking
 - 👥 **Social Sharing** - Share vaults as Farcaster Frames for viral reach
 - 🔒 **Trustless** - Smart contracts ensure funds are safe and transparent
@@ -249,20 +250,24 @@ npm run dev  # http://localhost:3000
 - [x] Frontend scaffolding (Next.js + Tailwind)
 - [x] Project documentation
 
-### ⏳ Phase 2: Integration (Current - Week 1-2)
+### ⏳ Phase 2: Multi-Token Support (Current - Week 1-2)
+- [ ] **PRIORITY #1: Multi-Token Integration (ETH, USDT, DAI, USDC)**
+  - [ ] Refactor smart contracts for multiple ERC20 tokens
+  - [ ] Integrate 4 Aave V3 pools (ETH, USDT, DAI, USDC)
+  - [ ] Token selector UI in frontend
+  - [ ] Database schema updates for token tracking
+  - [ ] Test all 4 tokens end-to-end
 - [ ] Deploy contracts to Base Sepolia
-- [ ] Test vault creation and contributions on testnet
 - [ ] Complete Privy wallet integration
-- [ ] Build Farcaster Frames
-- [ ] WebSocket real-time updates
-- [ ] End-to-end testing
+- [ ] Build Farcaster Frames with multi-token support
 
-### 🔮 Phase 3: Testing (Week 3-4)
-- [ ] Write smart contract tests (Foundry)
-- [ ] Backend API tests (pytest)
-- [ ] Frontend component tests
-- [ ] 20 internal testers on Base Sepolia
+### ⏳ Phase 3: Launch Preparation (Week 3)
+- [ ] Farcaster Frames integration finalization
+- [ ] WebSocket real-time updates
+- [ ] Smart contract tests (Foundry)
+- [ ] 10-15 internal testers on Base Sepolia
 - [ ] Bug fixes and optimization
+- [ ] Deploy to production (Vercel + Railway)
 
 ### 🔮 Phase 4: Security & Launch (Week 5-8)
 - [ ] Smart contract audit
