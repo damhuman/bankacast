@@ -380,19 +380,45 @@
 - Verify Aave yields для всіх токенів
 
 ### Каріна
+- **PRIORITY: Identify real Ukrainian volunteer for first military vault**
+  - Outreach до особистих контактів (волонтери, військові)
+  - Знайти когось з реальною потребою ($500-5000)
+  - Verify legitimacy (соцмережі, vouching)
+  - Підготувати briefing: як працює EthBanka
 - User guide: як створити vault в різних токенах
 - Multi-token benefits explainer (ETH vs USDC vs USDT vs DAI)
 - Beta tester onboarding materials
-- Launch Twitter thread (5-7 tweets) з emphasis на flexibility
-- Farcaster launch post: "Donate in YOUR preferred currency"
+- **Prepare для Week 3 real vault launch:**
+  - Draft compelling vault title/description з volunteer
+  - Plan Farcaster Frame sharing strategy
+  - Identify key Telegram groups для sharing
 - Token selection guide: який токен обрати для різних use cases
-- Outreach до Ukrainian volunteer communities
 
 ---
 
 ## Deliverables (End of Week 3)
 
-**Tech - Multi-Token Support**
+### 🎯 PRIMARY DELIVERABLE (North Star)
+
+**1 REAL Military Fundraiser Vault via Farcaster**
+- ✅ Real Ukrainian volunteer/unit identified and onboarded
+- ✅ Vault created for actual military need ($500-5000)
+- ✅ Shared as Farcaster Frame in /ukraine and volunteer's networks
+- ✅ Minimum 3 real contributions from different wallets
+- ✅ Vault actively fundraising toward goal
+- ✅ Case study documented (screenshots, metrics, feedback)
+
+**Success looks like:**
+- Volunteer successfully created vault (with our help if needed)
+- Frame shared in multiple Telegram groups and Farcaster
+- First contributions received within 24 hours
+- No critical bugs blocking real usage
+- Volunteer satisfied with experience
+
+---
+
+### Tech - Multi-Token Support
+
 - Smart contracts на Base Sepolia (ETH, USDT, DAI, USDC support)
 - **4 Aave V3 pool integrations working** (ETH, USDT, DAI, USDC)
 - **Multi-token VaultFactory deployed**
@@ -404,24 +430,30 @@
   - 1 USDT vault
   - 1 DAI vault
 
-**Product**
+### Product
+
 - Landing page live з multi-token messaging
-- User guide document (how to choose token)
+- User guide document (how to choose token + real vault example)
 - Token comparison guide (features, APY, use cases)
 - FAQ з multi-token section
+- **Real military vault as featured example**
 
-**Community**
+### Community
+
 - 10-15 beta testers залучені
+- **1 real Ukrainian volunteer successfully using platform**
 - Twitter + Farcaster active
 - Launch announcement: "Donate in YOUR currency"
-- Ukrainian volunteer communities outreach
+- **Real vault shared in Ukrainian communities**
 
-**Feature Validation**
+### Feature Validation
+
 - ✅ All 4 tokens working end-to-end
 - ✅ Aave yield generation verified for each token
-- ✅ Farcaster Frames support all tokens
+- ✅ **Farcaster Frames working in production (real vault proof)**
 - ✅ Gas costs compared across tokens
-- ✅ Demo video: multi-token flow
+- ✅ **Real user flow validated (volunteer feedback)**
+- ✅ Demo video: multi-token flow + real vault showcase
 
 ---
 
