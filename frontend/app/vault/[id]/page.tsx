@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
 import ContributeModal from '@/components/ContributeModal';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+import { formatUnits } from 'viem';
 
 const VAULT_ABI = [
   {
@@ -29,30 +28,110 @@ const VAULT_ABI = [
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "goalAmount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "metadataURI",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "description",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalContributed",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTokenInfo",
+    "outputs": [
+      { "internalType": "address", "name": "tokenAddress", "type": "address" },
+      { "internalType": "uint8", "name": "decimals", "type": "uint8" },
+      { "internalType": "string", "name": "symbol", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getYieldStats",
+    "outputs": [
+      { "internalType": "uint256", "name": "principal", "type": "uint256" },
+      { "internalType": "uint256", "name": "currentBalance", "type": "uint256" },
+      { "internalType": "uint256", "name": "yieldEarned", "type": "uint256" },
+      { "internalType": "uint256", "name": "yieldPercentage", "type": "uint256" },
+      { "internalType": "uint256", "name": "currentAPY", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getStatus",
+    "outputs": [{ "internalType": "uint8", "name": "status", "type": "uint8" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContributors",
+    "outputs": [{ "internalType": "address[]", "name": "", "type": "address[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "contributor", "type": "address" }],
+    "name": "getContribution",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContributorCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 
 interface Contributor {
   address: string;
-  amount: number;
-  farcaster_username: string | null;
+  amount: bigint;
 }
 
-interface Vault {
+interface VaultData {
   address: string;
   creator: string;
-  goal_amount: number;
+  goalAmount: bigint;
   title: string;
-  description: string | null;
-  image_url: string | null;
-  total_contributed: number;
-  current_balance: number;
-  yield_earned: number;
-  apy: number;
+  description: string;
+  totalContributed: bigint;
+  currentBalance: bigint;
+  yieldEarned: bigint;
+  apy: bigint;
   progress: number;
   contributors: Contributor[];
-  status: string;
-  created_at: string | null;
+  status: number;
+  tokenAddress: string;
+  tokenDecimals: number;
+  tokenSymbol: string;
 }
 
 export default function VaultPage({ params }: { params: { id: string } }) {
@@ -60,8 +139,9 @@ export default function VaultPage({ params }: { params: { id: string } }) {
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isSuccess } = useWaitForTransactionReceipt({ hash });
+  const publicClient = usePublicClient();
 
-  const [vault, setVault] = useState<Vault | null>(null);
+  const [vault, setVault] = useState<VaultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showContributeModal, setShowContributeModal] = useState(false);
@@ -82,13 +162,118 @@ export default function VaultPage({ params }: { params: { id: string } }) {
   }, [isSuccess]);
 
   const fetchVault = async () => {
+    if (!publicClient) {
+      setError('Blockchain client not available');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/api/vaults/${id}`);
-      if (!response.ok) throw new Error('Failed to fetch vault');
-      const data = await response.json();
-      setVault(data);
+      const vaultAddress = id as `0x${string}`;
+
+      // Fetch all vault data in parallel
+      const [
+        creator,
+        goalAmount,
+        metadataURI,
+        description,
+        totalContributed,
+        tokenInfo,
+        yieldStats,
+        status,
+        contributorAddresses
+      ] = await Promise.all([
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'creator',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'goalAmount',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'metadataURI',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'description',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'totalContributed',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'getTokenInfo',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'getYieldStats',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'getStatus',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'getContributors',
+        })
+      ]);
+
+      // Fetch contribution amounts for each contributor
+      const contributorsWithAmounts = await Promise.all(
+        contributorAddresses.map(async (contributorAddr) => {
+          const amount = await publicClient.readContract({
+            address: vaultAddress,
+            abi: VAULT_ABI,
+            functionName: 'getContribution',
+            args: [contributorAddr],
+          });
+          return {
+            address: contributorAddr,
+            amount: amount as bigint,
+          };
+        })
+      );
+
+      // Extract title from metadataURI (db://Title format)
+      const title = metadataURI.replace('db://', '');
+
+      // Calculate progress
+      const progress = goalAmount > 0n
+        ? (Number(totalContributed) * 100) / Number(goalAmount)
+        : 0;
+
+      setVault({
+        address: vaultAddress,
+        creator: creator as string,
+        goalAmount: goalAmount as bigint,
+        title,
+        description: description as string,
+        totalContributed: totalContributed as bigint,
+        currentBalance: yieldStats[1] as bigint,
+        yieldEarned: yieldStats[2] as bigint,
+        apy: yieldStats[4] as bigint,
+        progress,
+        contributors: contributorsWithAmounts,
+        status: status as number,
+        tokenAddress: tokenInfo[0] as string,
+        tokenDecimals: tokenInfo[1] as number,
+        tokenSymbol: tokenInfo[2] as string,
+      });
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error fetching vault:', err);
+      setError(err.message || 'Failed to fetch vault data');
     } finally {
       setLoading(false);
     }
@@ -122,17 +307,24 @@ export default function VaultPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const formatAmount = (wei: number) => {
-    return (wei / 1e6).toFixed(2);
+  const formatAmount = (amount: bigint, decimals: number) => {
+    return parseFloat(formatUnits(amount, decimals)).toFixed(decimals === 18 ? 4 : 2);
   };
 
-  const formatAPY = (apy: number) => {
-    return (apy / 100).toFixed(2);
+  const formatAPY = (apy: bigint) => {
+    // APY is in basis points (10000 = 100%)
+    return (Number(apy) / 100).toFixed(2);
+  };
+
+  const getTokenIcon = (symbol: string) => {
+    if (symbol === 'ETH') return '⟠';
+    if (symbol === 'USDC') return '💵';
+    return '🪙';
   };
 
   const isCreator = vault && address && vault.creator.toLowerCase() === address.toLowerCase();
-  const goalReached = vault && vault.total_contributed >= vault.goal_amount;
-  const isCompleted = vault?.status === 'completed';
+  const goalReached = vault && vault.totalContributed >= vault.goalAmount;
+  const isCompleted = vault?.status === 2;
 
   if (loading) {
     return (
@@ -176,7 +368,10 @@ export default function VaultPage({ params }: { params: { id: string } }) {
         <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-6">
           {/* Title & Description */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-3">{vault.title}</h1>
+            <div className="flex items-center gap-2 mb-3">
+              <h1 className="text-3xl font-bold">{vault.title}</h1>
+              <span className="text-2xl">{getTokenIcon(vault.tokenSymbol)}</span>
+            </div>
             {vault.description && (
               <p className="text-gray-600 mb-4">{vault.description}</p>
             )}
@@ -212,15 +407,24 @@ export default function VaultPage({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-600 mb-1">Goal Amount</p>
-              <p className="text-xl font-bold">${formatAmount(vault.goal_amount)}</p>
+              <p className="text-xl font-bold">
+                {vault.tokenSymbol === 'USDC' && '$'}
+                {formatAmount(vault.goalAmount, vault.tokenDecimals)} {vault.tokenSymbol}
+              </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-xs text-gray-600 mb-1">Total Raised</p>
-              <p className="text-xl font-bold">${formatAmount(vault.total_contributed)}</p>
+              <p className="text-xl font-bold">
+                {vault.tokenSymbol === 'USDC' && '$'}
+                {formatAmount(vault.totalContributed, vault.tokenDecimals)} {vault.tokenSymbol}
+              </p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-xs text-gray-600 mb-1">Yield Earned</p>
-              <p className="text-xl font-bold text-green-600">+${formatAmount(vault.yield_earned)}</p>
+              <p className="text-xl font-bold text-green-600">
+                +{vault.tokenSymbol === 'USDC' && '$'}
+                {formatAmount(vault.yieldEarned, vault.tokenDecimals)} {vault.tokenSymbol}
+              </p>
             </div>
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-xs text-gray-600 mb-1">Current APY</p>
@@ -233,7 +437,10 @@ export default function VaultPage({ params }: { params: { id: string } }) {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Balance (Principal + Yield)</p>
-                <p className="text-2xl font-bold">${formatAmount(vault.current_balance)}</p>
+                <p className="text-2xl font-bold">
+                  {vault.tokenSymbol === 'USDC' && '$'}
+                  {formatAmount(vault.currentBalance, vault.tokenDecimals)} {vault.tokenSymbol}
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Earning yield via Aave V3 on Base
                 </p>
@@ -323,11 +530,11 @@ export default function VaultPage({ params }: { params: { id: string } }) {
                     <p className="font-mono text-sm text-gray-900">
                       {contributor.address.slice(0, 6)}...{contributor.address.slice(-4)}
                     </p>
-                    {contributor.farcaster_username && (
-                      <p className="text-xs text-purple-600">@{contributor.farcaster_username}</p>
-                    )}
                   </div>
-                  <p className="font-semibold">${formatAmount(contributor.amount)}</p>
+                  <p className="font-semibold">
+                    {vault.tokenSymbol === 'USDC' && '$'}
+                    {formatAmount(contributor.amount, vault.tokenDecimals)} {vault.tokenSymbol}
+                  </p>
                 </div>
               ))}
             </div>
@@ -339,8 +546,11 @@ export default function VaultPage({ params }: { params: { id: string } }) {
         <ContributeModal
           vaultAddress={vault.address}
           vaultTitle={vault.title}
-          goalAmount={vault.goal_amount}
-          totalContributed={vault.total_contributed}
+          goalAmount={vault.goalAmount}
+          totalContributed={vault.totalContributed}
+          tokenAddress={vault.tokenAddress}
+          tokenDecimals={vault.tokenDecimals}
+          tokenSymbol={vault.tokenSymbol}
           onClose={() => setShowContributeModal(false)}
         />
       )}

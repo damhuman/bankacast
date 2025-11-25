@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits } from 'viem';
-
-const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
+import { parseUnits, formatUnits } from 'viem';
 
 const ERC20_ABI = [
   {
@@ -25,7 +23,7 @@ const VAULT_ABI = [
     inputs: [{ name: 'amount', type: 'uint256' }],
     name: 'contribute',
     outputs: [],
-    stateMutability: 'nonpayable',
+    stateMutability: 'payable',
     type: 'function',
   },
 ] as const;
@@ -33,8 +31,11 @@ const VAULT_ABI = [
 interface ContributeModalProps {
   vaultAddress: string;
   vaultTitle: string;
-  goalAmount: number;
-  totalContributed: number;
+  goalAmount: bigint;
+  totalContributed: bigint;
+  tokenAddress: string;
+  tokenDecimals: number;
+  tokenSymbol: string;
   onClose: () => void;
 }
 
@@ -43,6 +44,9 @@ export default function ContributeModal({
   vaultTitle,
   goalAmount,
   totalContributed,
+  tokenAddress,
+  tokenDecimals,
+  tokenSymbol,
   onClose,
 }: ContributeModalProps) {
   const { address, isConnected } = useAccount();
@@ -52,16 +56,17 @@ export default function ContributeModal({
   const [amount, setAmount] = useState('');
   const [step, setStep] = useState<'input' | 'approve' | 'contribute'>('input');
 
-  const maxContribution = (goalAmount - totalContributed) / 1e6;
+  const isETH = tokenAddress === '0x0000000000000000000000000000000000000000';
+  const maxContribution = parseFloat(formatUnits(goalAmount - totalContributed, tokenDecimals));
 
   const handleApprove = () => {
     if (!amount || parseFloat(amount) <= 0) return;
 
-    const amountWei = parseUnits(amount, 6);
+    const amountWei = parseUnits(amount, tokenDecimals);
     setStep('approve');
 
     writeContract({
-      address: USDC_ADDRESS,
+      address: tokenAddress as `0x${string}`,
       abi: ERC20_ABI,
       functionName: 'approve',
       args: [vaultAddress as `0x${string}`, amountWei],
@@ -71,19 +76,31 @@ export default function ContributeModal({
   const handleContribute = () => {
     if (!amount || parseFloat(amount) <= 0) return;
 
-    const amountWei = parseUnits(amount, 6);
+    const amountWei = parseUnits(amount, tokenDecimals);
     setStep('contribute');
 
-    writeContract({
-      address: vaultAddress as `0x${string}`,
-      abi: VAULT_ABI,
-      functionName: 'contribute',
-      args: [amountWei],
-    });
+    if (isETH) {
+      // For ETH vaults, send ETH as msg.value
+      writeContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'contribute',
+        args: [amountWei],
+        value: amountWei,
+      });
+    } else {
+      // For ERC20 vaults, just call contribute (no msg.value)
+      writeContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'contribute',
+        args: [amountWei],
+      });
+    }
   };
 
-  // Auto-proceed to contribute after approval
-  if (step === 'approve' && isSuccess) {
+  // Auto-proceed to contribute after approval (ERC20 only)
+  if (step === 'approve' && isSuccess && !isETH) {
     setStep('contribute');
     handleContribute();
   }
@@ -116,10 +133,10 @@ export default function ContributeModal({
 
         <div className="mb-4">
           <p className="text-sm text-gray-600">
-            Raised: ${(totalContributed / 1e6).toFixed(2)} / ${(goalAmount / 1e6).toFixed(2)}
+            Raised: {formatUnits(totalContributed, tokenDecimals)} / {formatUnits(goalAmount, tokenDecimals)} {tokenSymbol}
           </p>
           <p className="text-sm text-gray-600">
-            Max contribution: ${maxContribution.toFixed(2)} USDC
+            Max contribution: {maxContribution.toFixed(tokenDecimals === 18 ? 4 : 2)} {tokenSymbol}
           </p>
         </div>
 
@@ -144,16 +161,16 @@ export default function ContributeModal({
           <>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amount (USDC)
+                Amount ({tokenSymbol})
               </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 max={maxContribution}
-                min="0.01"
-                step="0.01"
-                placeholder="10.00"
+                min={tokenDecimals === 18 ? '0.0001' : '0.01'}
+                step={tokenDecimals === 18 ? '0.001' : '0.01'}
+                placeholder={tokenDecimals === 18 ? '0.1' : '10.00'}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -166,7 +183,7 @@ export default function ContributeModal({
                 Cancel
               </button>
               <button
-                onClick={step === 'input' ? handleApprove : handleContribute}
+                onClick={isETH || step !== 'input' ? handleContribute : handleApprove}
                 disabled={isPending || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxContribution}
                 className="flex-1 bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -174,6 +191,8 @@ export default function ContributeModal({
                   ? step === 'approve'
                     ? 'Approving...'
                     : 'Contributing...'
+                  : isETH
+                  ? 'Contribute'
                   : step === 'approve'
                   ? 'Approve & Contribute'
                   : 'Contribute'}
@@ -181,7 +200,10 @@ export default function ContributeModal({
             </div>
 
             <p className="text-xs text-gray-500 mt-4 text-center">
-              You will need to approve USDC spend and then confirm the contribution transaction
+              {isETH
+                ? 'You will need to confirm the ETH transaction'
+                : `You will need to approve ${tokenSymbol} spend and then confirm the contribution transaction`
+              }
             </p>
           </>
         )}

@@ -1,6 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createPublicClient, http, formatUnits } from 'viem';
+import { baseSepolia } from 'viem/chains';
 
 const FRAME_VERSION = 'vNext';
+const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
+const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://sepolia.base.org';
+
+const VAULT_ABI = [
+  {
+    "inputs": [],
+    "name": "goalAmount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "metadataURI",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "description",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalContributed",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTokenInfo",
+    "outputs": [
+      { "internalType": "address", "name": "tokenAddress", "type": "address" },
+      { "internalType": "uint8", "name": "decimals", "type": "uint8" },
+      { "internalType": "string", "name": "symbol", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContributorCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] as const;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -15,30 +68,60 @@ export async function GET(req: NextRequest) {
   const host = req.headers.get('host') || 'localhost:3001';
   const APP_URL = `${protocol}://${host}`;
 
-  // Fetch vault data from backend
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+  // Create viem public client
+  const publicClient = createPublicClient({
+    chain: baseSepolia,
+    transport: http(RPC_URL),
+  });
 
-  let vault;
   try {
-    const response = await fetch(`${apiUrl}/api/vaults/${vaultAddress}`);
-    if (!response.ok) {
-      throw new Error('Vault not found');
-    }
-    vault = await response.json();
-  } catch (error) {
-    return new NextResponse('Vault not found', { status: 404 });
-  }
+    // Fetch vault data from blockchain
+    const [goalAmount, metadataURI, description, totalContributed, tokenInfo, contributorCount] = await Promise.all([
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'goalAmount',
+      }),
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'metadataURI',
+      }),
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'description',
+      }),
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'totalContributed',
+      }),
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'getTokenInfo',
+      }),
+      publicClient.readContract({
+        address: vaultAddress as `0x${string}`,
+        abi: VAULT_ABI,
+        functionName: 'getContributorCount',
+      }),
+    ]);
 
-  // Prepare display values
-  const title = vault.title || 'Savings Vault';
-  const description = vault.description || 'Join this social savings vault on Base';
-  const progress = vault.progress || 0;
-  const raised = (vault.total_contributed / 1e6).toFixed(2);
-  const goal = (vault.goal_amount / 1e6).toFixed(2);
-  const contributors = vault.contributors?.length || 0;
+    // Extract data
+    const title = (metadataURI as string).replace('db://', '');
+    const decimals = tokenInfo[1] as number;
+    const symbol = tokenInfo[2] as string;
+    const progress = goalAmount > 0n
+      ? Math.floor((Number(totalContributed) * 100) / Number(goalAmount))
+      : 0;
+    const raised = parseFloat(formatUnits(totalContributed as bigint, decimals)).toFixed(decimals === 18 ? 4 : 2);
+    const goal = parseFloat(formatUnits(goalAmount as bigint, decimals)).toFixed(decimals === 18 ? 4 : 2);
+    const contributors = Number(contributorCount);
 
-  // Generate Frame HTML
-  const frameHtml = `
+    // Generate Frame HTML
+    const frameHtml = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -51,15 +134,15 @@ export async function GET(req: NextRequest) {
         <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
 
         <!-- Buttons -->
-        <meta property="fc:frame:button:1" content="💰 $10" />
+        <meta property="fc:frame:button:1" content="💰 10 ${symbol}" />
         <meta property="fc:frame:button:1:action" content="post" />
         <meta property="fc:frame:button:1:target" content="${APP_URL}/api/frame/contribute?vault=${vaultAddress}&amount=10" />
 
-        <meta property="fc:frame:button:2" content="💵 $25" />
+        <meta property="fc:frame:button:2" content="💵 25 ${symbol}" />
         <meta property="fc:frame:button:2:action" content="post" />
         <meta property="fc:frame:button:2:target" content="${APP_URL}/api/frame/contribute?vault=${vaultAddress}&amount=25" />
 
-        <meta property="fc:frame:button:3" content="💸 $50" />
+        <meta property="fc:frame:button:3" content="💸 50 ${symbol}" />
         <meta property="fc:frame:button:3:action" content="post" />
         <meta property="fc:frame:button:3:target" content="${APP_URL}/api/frame/contribute?vault=${vaultAddress}&amount=50" />
 
@@ -70,7 +153,7 @@ export async function GET(req: NextRequest) {
         <meta property="fc:frame:post_url" content="${APP_URL}/api/frame?vault=${vaultAddress}" />
 
         <title>${title} - Banka</title>
-        <meta name="description" content="${description}" />
+        <meta name="description" content="${description || 'Join this social savings vault on Base'}" />
 
         <style>
           body {
@@ -148,11 +231,11 @@ export async function GET(req: NextRequest) {
           <div class="stats">
             <div class="stat">
               <div class="stat-label">💵 Raised</div>
-              <div class="stat-value">$${raised}</div>
+              <div class="stat-value">${symbol === 'USDC' ? '$' : ''}${raised} ${symbol}</div>
             </div>
             <div class="stat">
               <div class="stat-label">🎯 Goal</div>
-              <div class="stat-value">$${goal}</div>
+              <div class="stat-value">${symbol === 'USDC' ? '$' : ''}${goal} ${symbol}</div>
             </div>
             <div class="stat">
               <div class="stat-label">👥 Contributors</div>
@@ -164,11 +247,15 @@ export async function GET(req: NextRequest) {
     </html>
   `;
 
-  return new NextResponse(frameHtml, {
-    headers: {
-      'Content-Type': 'text/html',
-    },
-  });
+    return new NextResponse(frameHtml, {
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching vault:', error);
+    return new NextResponse('Vault not found', { status: 404 });
+  }
 }
 
 export async function POST(req: NextRequest) {
