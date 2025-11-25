@@ -26,6 +26,7 @@
     "heroImageUrl": "https://bankacast.netlify.app/splash.png",
     "ogTitle": "Banka - Social Savings & Fundraising on Base",
     "ogDescription": "Transparent, yield-generating donation platform. Create vaults in ETH/USDC with automatic Aave yields.",
-    "ogImageUrl": "https://bankacast.netlify.app/splash.png"
+    "ogImageUrl": "https://bankacast.netlify.app/splash.png",
+    "noindex": false
   }
 }
