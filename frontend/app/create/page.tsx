@@ -8,15 +8,35 @@ import { useAccount, useWriteContract, useSwitchChain, useWaitForTransactionRece
 import { parseUnits, decodeEventLog } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
-const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
+const WETH_ADDRESS = process.env.NEXT_PUBLIC_WETH_ADDRESS as `0x${string}`;
 const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '84532');
+
+const TOKEN_CONFIG = {
+  USDC: {
+    address: USDC_ADDRESS,
+    decimals: 6,
+    symbol: 'USDC',
+    icon: '💵',
+    name: 'USD Coin'
+  },
+  ETH: {
+    address: '0x0000000000000000000000000000000000000000' as `0x${string}`,
+    decimals: 18,
+    symbol: 'ETH',
+    icon: '⟠',
+    name: 'Ethereum'
+  }
+} as const;
 
 const FACTORY_ABI = [
   {
     "inputs": [
       { "internalType": "uint256", "name": "goalAmount", "type": "uint256" },
       { "internalType": "string", "name": "metadataURI", "type": "string" },
-      { "internalType": "string", "name": "description", "type": "string" }
+      { "internalType": "string", "name": "description", "type": "string" },
+      { "internalType": "address", "name": "token", "type": "address" },
+      { "internalType": "uint8", "name": "tokenDecimals", "type": "uint8" }
     ],
     "name": "createVault",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
@@ -49,6 +69,7 @@ export default function CreateVaultPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
+  const [selectedToken, setSelectedToken] = useState<'USDC' | 'ETH'>('USDC');
 
   // Redirect to vault page after transaction is confirmed
   useEffect(() => {
@@ -108,14 +129,19 @@ export default function CreateVaultPage() {
       return;
     }
 
-    // Convert goal amount to USDC wei (6 decimals)
-    const goalAmountWei = parseUnits(goalAmount, 6);
+    // Get token configuration
+    const tokenConfig = TOKEN_CONFIG[selectedToken];
+
+    // Convert goal amount to token wei (6 or 18 decimals)
+    const goalAmountWei = parseUnits(goalAmount, tokenConfig.decimals);
 
     console.log('Creating vault with params:', {
       address: FACTORY_ADDRESS,
       goalAmountWei: goalAmountWei.toString(),
       metadataURI: `db://${title}`,
       description,
+      token: tokenConfig.address,
+      decimals: tokenConfig.decimals,
       chainId: CHAIN_ID,
     });
 
@@ -124,7 +150,7 @@ export default function CreateVaultPage() {
       address: FACTORY_ADDRESS,
       abi: FACTORY_ABI,
       functionName: 'createVault',
-      args: [goalAmountWei, `db://${title}`, description],
+      args: [goalAmountWei, `db://${title}`, description, tokenConfig.address, tokenConfig.decimals],
     });
   };
 
@@ -229,28 +255,68 @@ export default function CreateVaultPage() {
             </p>
           </div>
 
+          {/* Token Selector */}
+          <div className="mb-8">
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              Select Token
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setSelectedToken('USDC')}
+                className={`p-5 rounded-xl border-2 transition-all duration-200 ${
+                  selectedToken === 'USDC'
+                    ? 'border-primary bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="text-4xl mb-2">{TOKEN_CONFIG.USDC.icon}</div>
+                <div className="font-bold text-lg">{TOKEN_CONFIG.USDC.symbol}</div>
+                <div className="text-xs text-gray-500 mt-1">{TOKEN_CONFIG.USDC.name}</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedToken('ETH')}
+                className={`p-5 rounded-xl border-2 transition-all duration-200 ${
+                  selectedToken === 'ETH'
+                    ? 'border-primary bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="text-4xl mb-2">{TOKEN_CONFIG.ETH.icon}</div>
+                <div className="font-bold text-lg">{TOKEN_CONFIG.ETH.symbol}</div>
+                <div className="text-xs text-gray-500 mt-1">{TOKEN_CONFIG.ETH.name}</div>
+              </button>
+            </div>
+          </div>
+
           {/* Goal Amount */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Goal Amount (USDC)
+              Goal Amount ({selectedToken})
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
-                $
-              </span>
+              {selectedToken === 'USDC' && (
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                  $
+                </span>
+              )}
               <input
                 type="number"
                 value={goalAmount}
                 onChange={(e) => setGoalAmount(e.target.value)}
                 required
-                min="1"
-                step="0.01"
-                className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300"
-                placeholder="1000"
+                min="0.0001"
+                step={selectedToken === 'ETH' ? '0.001' : '0.01'}
+                className={`w-full ${selectedToken === 'USDC' ? 'pl-8' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300`}
+                placeholder={selectedToken === 'ETH' ? '1.0' : '1000'}
               />
             </div>
             <p className="text-sm text-gray-500 mt-2">
-              Target amount in USDC (e.g., 1000 for $1,000)
+              {selectedToken === 'ETH'
+                ? 'Target amount in ETH (e.g., 1.0 for 1 ETH)'
+                : 'Target amount in USDC (e.g., 1000 for $1,000)'}
             </p>
           </div>
 

@@ -33,20 +33,22 @@ contract VaultTest is Test {
         address vault = factory.createVault(
             1000 * 1e6, // 1000 USDC
             "ipfs://test",
-            "Test vault description"
+            "Test vault description",
+            mockUsdc,
+            6
         );
 
         assertTrue(vault != address(0));
-        assertEq(Vault(vault).creator(), creator);
-        assertEq(Vault(vault).goalAmount(), 1000 * 1e6);
-        assertEq(Vault(vault).description(), "Test vault description");
+        assertEq(Vault(payable(vault)).creator(), creator);
+        assertEq(Vault(payable(vault)).goalAmount(), 1000 * 1e6);
+        assertEq(Vault(payable(vault)).description(), "Test vault description");
     }
 
     function testVaultCount() public {
         vm.startPrank(creator);
 
-        factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1");
-        factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2");
+        factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6);
+        factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6);
 
         vm.stopPrank();
 
@@ -56,8 +58,8 @@ contract VaultTest is Test {
     function testGetUserVaults() public {
         vm.startPrank(creator);
 
-        address vault1 = factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1");
-        address vault2 = factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2");
+        address vault1 = factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6);
+        address vault2 = factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6);
 
         vm.stopPrank();
 
@@ -75,7 +77,9 @@ contract VaultTest is Test {
         factory.createVault(
             0,
             "ipfs://test",
-            "Description"
+            "Description",
+            mockUsdc,
+            6
         );
     }
 
@@ -87,7 +91,9 @@ contract VaultTest is Test {
         factory.createVault(
             1000 * 1e6,
             "",
-            "Description"
+            "Description",
+            mockUsdc,
+            6
         );
     }
 }

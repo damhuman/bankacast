@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@aave/core-v3/interfaces/IPool.sol";
+import "./interfaces/IWETH.sol";
 
 /**
  * @title Vault
@@ -19,8 +20,11 @@ contract Vault is Initializable {
     string public description; // Detailed description
 
     address public aavePool;
-    address public usdc;
-    address public aUsdc; // Aave interest-bearing token (set after first deposit)
+    address public token; // address(0) for ETH, ERC20 address for tokens
+    uint8 public tokenDecimals; // 6 for USDC, 18 for ETH
+    address public aToken; // Aave interest-bearing token (set after first deposit)
+
+    address public constant WETH = 0x4200000000000000000000000000000000000006;
 
     uint256 public totalContributed;
     mapping(address => uint256) public contributions;
@@ -80,11 +84,12 @@ contract Vault is Initializable {
     /**
      * @notice Initialize the vault (replaces constructor for clones)
      * @param _creator Address of vault creator
-     * @param _goalAmount Target amount in USDC (6 decimals)
+     * @param _goalAmount Target amount in token decimals
      * @param _metadataURI DB ID for title
      * @param _description Detailed description
      * @param _aavePool Aave V3 Pool address
-     * @param _usdc USDC token address
+     * @param _token Token address (address(0) for ETH)
+     * @param _tokenDecimals Token decimals (6 for USDC, 18 for ETH)
      */
     function initialize(
         address _creator,
@@ -92,28 +97,46 @@ contract Vault is Initializable {
         string calldata _metadataURI,
         string calldata _description,
         address _aavePool,
-        address _usdc
+        address _token,
+        uint8 _tokenDecimals
     ) external initializer {
         creator = _creator;
         goalAmount = _goalAmount;
         metadataURI = _metadataURI;
         description = _description;
         aavePool = _aavePool;
-        usdc = _usdc;
+        token = _token;
+        tokenDecimals = _tokenDecimals;
     }
 
     // ============ Core Functions ============
 
     /**
-     * @notice Contribute USDC to the vault
-     * @param amount Amount of USDC to contribute (6 decimals)
+     * @notice Contribute to the vault (ETH or ERC20)
+     * @param amount Amount to contribute in token decimals
      */
-    function contribute(uint256 amount) external notWithdrawn {
+    function contribute(uint256 amount) external payable notWithdrawn {
         if (amount == 0) revert InvalidAmount();
 
-        // Transfer USDC from contributor to this contract
-        if (!IERC20(usdc).transferFrom(msg.sender, address(this), amount)) {
-            revert TransferFailed();
+        address depositToken;
+
+        // Handle ETH vs ERC20
+        if (token == address(0)) {
+            // ETH vault
+            if (msg.value != amount) revert InvalidAmount();
+
+            // Wrap ETH to WETH
+            IWETH(WETH).deposit{value: amount}();
+            depositToken = WETH;
+        } else {
+            // ERC20 vault
+            if (msg.value != 0) revert InvalidAmount();
+
+            // Transfer ERC20 from contributor
+            if (!IERC20(token).transferFrom(msg.sender, address(this), amount)) {
+                revert TransferFailed();
+            }
+            depositToken = token;
         }
 
         // Track contribution
@@ -125,17 +148,17 @@ contract Vault is Initializable {
         totalContributed += amount;
 
         // Deposit to Aave
-        IERC20(usdc).approve(aavePool, amount);
-        IPool(aavePool).supply(usdc, amount, address(this), 0);
+        IERC20(depositToken).approve(aavePool, amount);
+        IPool(aavePool).supply(depositToken, amount, address(this), 0);
 
         // Get aToken address if first deposit
-        if (aUsdc == address(0)) {
-            aUsdc = IPool(aavePool).getReserveData(usdc).aTokenAddress;
+        if (aToken == address(0)) {
+            aToken = IPool(aavePool).getReserveData(depositToken).aTokenAddress;
         }
 
-        uint256 currentYield = aUsdc != address(0)
-            ? (IERC20(aUsdc).balanceOf(address(this)) > totalContributed
-                ? IERC20(aUsdc).balanceOf(address(this)) - totalContributed
+        uint256 currentYield = aToken != address(0)
+            ? (IERC20(aToken).balanceOf(address(this)) > totalContributed
+                ? IERC20(aToken).balanceOf(address(this)) - totalContributed
                 : 0)
             : 0;
 
@@ -151,8 +174,19 @@ contract Vault is Initializable {
         isWithdrawn = true;
 
         // Withdraw from Aave (principal + yield)
-        uint256 aTokenBalance = IERC20(aUsdc).balanceOf(address(this));
-        IPool(aavePool).withdraw(usdc, aTokenBalance, creator);
+        uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
+
+        if (token == address(0)) {
+            // ETH vault: withdraw WETH from Aave, unwrap, send ETH
+            IPool(aavePool).withdraw(WETH, aTokenBalance, address(this));
+            IWETH(WETH).withdraw(aTokenBalance);
+
+            (bool success, ) = creator.call{value: aTokenBalance}("");
+            if (!success) revert TransferFailed();
+        } else {
+            // ERC20 vault: withdraw directly to creator
+            IPool(aavePool).withdraw(token, aTokenBalance, creator);
+        }
 
         uint256 principal = totalContributed;
         uint256 yield = aTokenBalance > principal ? aTokenBalance - principal : 0;
@@ -167,11 +201,21 @@ contract Vault is Initializable {
     function smash() external onlyCreator notWithdrawn {
         isWithdrawn = true;
 
-        uint256 aTokenBalance = aUsdc != address(0) ? IERC20(aUsdc).balanceOf(address(this)) : 0;
+        uint256 aTokenBalance = aToken != address(0) ? IERC20(aToken).balanceOf(address(this)) : 0;
 
         // Withdraw from Aave if there are funds
         if (aTokenBalance > 0) {
-            IPool(aavePool).withdraw(usdc, aTokenBalance, creator);
+            if (token == address(0)) {
+                // ETH vault: withdraw WETH, unwrap, send ETH
+                IPool(aavePool).withdraw(WETH, aTokenBalance, address(this));
+                IWETH(WETH).withdraw(aTokenBalance);
+
+                (bool success, ) = creator.call{value: aTokenBalance}("");
+                if (!success) revert TransferFailed();
+            } else {
+                // ERC20 vault: withdraw directly to creator
+                IPool(aavePool).withdraw(token, aTokenBalance, creator);
+            }
         }
 
         uint256 principal = totalContributed;
@@ -210,21 +254,22 @@ contract Vault is Initializable {
         returns (uint256 principal, uint256 yield, uint256 total)
     {
         principal = totalContributed;
-        total = aUsdc != address(0) ? IERC20(aUsdc).balanceOf(address(this)) : 0;
+        total = aToken != address(0) ? IERC20(aToken).balanceOf(address(this)) : 0;
         yield = total > principal ? total - principal : 0;
     }
 
     /**
-     * @notice Get current APY from Aave for USDC
+     * @notice Get current APY from Aave for the vault's token
      * @return apy Annual Percentage Yield in basis points (10000 = 100%)
      */
     function getCurrentAPY() external view returns (uint256 apy) {
-        if (aUsdc == address(0)) return 0;
+        if (aToken == address(0)) return 0;
 
         // Get reserve data from Aave and extract currentLiquidityRate
         // liquidityRate is in ray (1e27), convert to basis points (1e4)
         // APY = (liquidityRate / 1e27) * 10000
-        apy = IPool(aavePool).getReserveData(usdc).currentLiquidityRate / 1e23; // 1e27 / 1e4 = 1e23
+        address reserveAsset = token == address(0) ? WETH : token;
+        apy = IPool(aavePool).getReserveData(reserveAsset).currentLiquidityRate / 1e23; // 1e27 / 1e4 = 1e23
     }
 
     /**
@@ -243,7 +288,7 @@ contract Vault is Initializable {
         uint256 currentAPY
     ) {
         principal = totalContributed;
-        currentBalance = aUsdc != address(0) ? IERC20(aUsdc).balanceOf(address(this)) : 0;
+        currentBalance = aToken != address(0) ? IERC20(aToken).balanceOf(address(this)) : 0;
         yieldEarned = currentBalance > principal ? currentBalance - principal : 0;
         yieldPercentage = principal > 0 ? (yieldEarned * 10000) / principal : 0;
         currentAPY = this.getCurrentAPY();
@@ -282,5 +327,29 @@ contract Vault is Initializable {
      */
     function getContribution(address contributor) external view returns (uint256) {
         return contributions[contributor];
+    }
+
+    /**
+     * @notice Get token information
+     * @return tokenAddress Token address (address(0) for ETH)
+     * @return decimals Token decimals
+     * @return symbol Token symbol
+     */
+    function getTokenInfo() external view returns (
+        address tokenAddress,
+        uint8 decimals,
+        string memory symbol
+    ) {
+        tokenAddress = token;
+        decimals = tokenDecimals;
+        symbol = token == address(0) ? "ETH" : "USDC";
+    }
+
+    /**
+     * @notice Accept ETH when unwrapping WETH
+     * @dev Only accepts ETH from WETH contract for security
+     */
+    receive() external payable {
+        require(msg.sender == WETH, "Only WETH");
     }
 }

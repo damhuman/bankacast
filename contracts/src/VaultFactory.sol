@@ -16,11 +16,22 @@ contract VaultFactory {
     address public immutable aavePool;
     address public immutable usdc;
 
+    address public constant WETH = 0x4200000000000000000000000000000000000006;
+
+    // ============ Structs ============
+
+    struct TokenInfo {
+        bool supported;
+        uint8 decimals;
+        string symbol;
+    }
+
     // ============ State Variables ============
 
     address[] public allVaults;
     mapping(address => address[]) public userVaults; // creator => vaults
     mapping(address => bool) public isVault; // Quick lookup
+    mapping(address => TokenInfo) public supportedTokens; // Token whitelist
 
     // ============ Events ============
 
@@ -30,6 +41,8 @@ contract VaultFactory {
         uint256 goalAmount,
         string metadataURI,
         string description,
+        address indexed token,
+        uint8 tokenDecimals,
         uint256 timestamp,
         uint256 vaultIndex
     );
@@ -38,6 +51,8 @@ contract VaultFactory {
 
     error InvalidGoalAmount();
     error InvalidMetadata();
+    error UnsupportedToken();
+    error InvalidDecimals();
 
     // ============ Constructor ============
 
@@ -51,37 +66,48 @@ contract VaultFactory {
         vaultImplementation = _vaultImplementation;
         aavePool = _aavePool;
         usdc = _usdc;
+
+        // Initialize supported tokens whitelist
+        supportedTokens[address(0)] = TokenInfo(true, 18, "ETH");
+        supportedTokens[_usdc] = TokenInfo(true, 6, "USDC");
     }
 
     // ============ Core Functions ============
 
     /**
      * @notice Create a new savings vault
-     * @param _goalAmount Target amount in USDC (6 decimals)
+     * @param _goalAmount Target amount in token decimals
      * @param _metadataURI DB ID for title
      * @param _description Detailed description
+     * @param _token Token address (address(0) for ETH)
+     * @param _tokenDecimals Token decimals (6 or 18)
      * @return vault Address of newly deployed vault
      */
     function createVault(
         uint256 _goalAmount,
         string calldata _metadataURI,
-        string calldata _description
+        string calldata _description,
+        address _token,
+        uint8 _tokenDecimals
     ) external returns (address vault) {
         // Validation
         if (_goalAmount == 0) revert InvalidGoalAmount();
         if (bytes(_metadataURI).length == 0) revert InvalidMetadata();
+        if (!supportedTokens[_token].supported) revert UnsupportedToken();
+        if (_tokenDecimals != supportedTokens[_token].decimals) revert InvalidDecimals();
 
         // Deploy minimal proxy clone
         vault = Clones.clone(vaultImplementation);
 
         // Initialize the vault
-        Vault(vault).initialize(
+        Vault(payable(vault)).initialize(
             msg.sender, // creator
             _goalAmount,
             _metadataURI,
             _description,
             aavePool,
-            usdc
+            _token,
+            _tokenDecimals
         );
 
         // Track vault
@@ -96,6 +122,8 @@ contract VaultFactory {
             _goalAmount,
             _metadataURI,
             _description,
+            _token,
+            _tokenDecimals,
             block.timestamp,
             vaultIndex
         );
