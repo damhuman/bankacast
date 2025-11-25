@@ -116,8 +116,8 @@ interface Vault {
 interface ContributeModalData {
   vaultAddress: string;
   vaultTitle: string;
-  goalAmount: number;
-  totalContributed: number;
+  goalAmount: bigint;
+  totalContributed: bigint;
   token: string;
   decimals: number;
   tokenSymbol: string;
@@ -450,8 +450,8 @@ export default function DiscoverPage() {
                         onClick={() => setSelectedVault({
                           vaultAddress: vault.address,
                           vaultTitle: vault.title,
-                          goalAmount: Number(vault.goalAmount),
-                          totalContributed: Number(vault.totalContributed),
+                          goalAmount: vault.goalAmount,
+                          totalContributed: vault.totalContributed,
                           token: vault.tokenAddress,
                           decimals: vault.decimals,
                           tokenSymbol: vault.tokenSymbol,
