@@ -251,7 +251,7 @@ export default function DiscoverPage() {
       );
 
       // Filter out failed fetches and sort by creation (newest first)
-      const validVaults = vaultData.filter((v): v is Vault => v !== null);
+      const validVaults = vaultData.filter((v) => v !== null) as Vault[];
       setVaults(validVaults.reverse());
 
     } catch (err: any) {
