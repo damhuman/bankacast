@@ -22,6 +22,8 @@ VAULT_FACTORY_ABI = [
             {"indexed": False, "name": "goalAmount", "type": "uint256"},
             {"indexed": False, "name": "metadataURI", "type": "string"},
             {"indexed": False, "name": "description", "type": "string"},
+            {"indexed": True, "name": "token", "type": "address"},
+            {"indexed": False, "name": "tokenDecimals", "type": "uint8"},
             {"indexed": False, "name": "timestamp", "type": "uint256"},
             {"indexed": False, "name": "vaultIndex", "type": "uint256"},
         ],
@@ -29,6 +31,11 @@ VAULT_FACTORY_ABI = [
         "type": "event",
     }
 ]
+
+# Token addresses
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+WETH_ADDRESS = "0x4200000000000000000000000000000000000006"
+USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 
 VAULT_ABI = [
     {
@@ -90,6 +97,20 @@ VAULT_ABI = [
 ]
 
 
+def get_token_symbol(token_address: str) -> tuple[str, int]:
+    """Get token symbol and decimals from address."""
+    token_lower = token_address.lower()
+
+    if token_lower == ZERO_ADDRESS.lower():
+        return ("ETH", 18)
+    elif token_lower == USDC_ADDRESS.lower():
+        return ("USDC", 6)
+    elif token_lower == WETH_ADDRESS.lower():
+        return ("WETH", 18)
+    else:
+        return ("UNKNOWN", 18)
+
+
 class EventListener:
     """Listen to blockchain events and update database."""
 
@@ -146,12 +167,17 @@ class EventListener:
             goal_amount = event["args"]["goalAmount"]
             metadata_uri = event["args"]["metadataURI"]
             description = event["args"]["description"]
+            token = event["args"]["token"]
+            token_decimals = event["args"]["tokenDecimals"]
 
             # Check if vault already exists
             existing = db.query(Vault).filter(Vault.address == vault_address).first()
             if existing:
                 print(f"Vault {vault_address} already indexed")
                 return
+
+            # Get token symbol
+            token_symbol, decimals = get_token_symbol(token)
 
             # Parse metadata_uri to get title
             # For MVP: metadata_uri is like "db://emergency_fund"
@@ -165,6 +191,9 @@ class EventListener:
                 metadata_uri=metadata_uri,
                 title=title,
                 description=description,
+                token=token.lower(),
+                decimals=token_decimals,
+                token_symbol=token_symbol,
                 total_contributed=0,
                 current_balance=0,
                 yield_earned=0,
@@ -175,7 +204,7 @@ class EventListener:
             db.add(vault)
             db.commit()
 
-            print(f"✅ Indexed new vault: {vault_address} by {creator}")
+            print(f"✅ Indexed new vault: {vault_address} ({token_symbol}) by {creator}")
 
         except Exception as e:
             print(f"Error handling VaultCreated event: {e}")
@@ -294,8 +323,10 @@ class EventListener:
 
             db.commit()
 
+            # Format amount based on vault decimals
+            amount_formatted = amount / (10 ** vault.decimals) if vault else amount / 1e6
             print(
-                f"✅ Indexed contribution: {amount / 1e6} USDC to {vault_address} from {contributor}"
+                f"✅ Indexed contribution: {amount_formatted} {vault.token_symbol if vault else 'tokens'} to {vault_address} from {contributor}"
             )
 
             # TODO: Broadcast via WebSocket to connected clients

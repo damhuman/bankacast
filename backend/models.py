@@ -13,13 +13,18 @@ class Vault(Base):
     id = Column(Integer, primary_key=True, index=True)
     address = Column(String(42), unique=True, nullable=False, index=True)
     creator = Column(String(42), nullable=False, index=True)
-    goal_amount = Column(BigInteger, nullable=False)  # USDC with 6 decimals
+    goal_amount = Column(BigInteger, nullable=False)  # Amount in token's native decimals
     metadata_uri = Column(String, nullable=False)
 
     # Off-chain metadata
     title = Column(String(200))
     description = Column(String(1000))
     image_url = Column(String(500))
+
+    # Token info
+    token = Column(String(42), nullable=False, index=True)  # address(0) for ETH, or token address
+    decimals = Column(Integer, nullable=False)  # 6 for USDC, 18 for ETH
+    token_symbol = Column(String(10), nullable=False)  # ETH, USDC, etc
 
     # Current state
     total_contributed = Column(BigInteger, default=0, nullable=False)
@@ -45,7 +50,7 @@ class Contribution(Base):
     id = Column(Integer, primary_key=True, index=True)
     vault_address = Column(String(42), ForeignKey('vaults.address'), nullable=False, index=True)
     contributor = Column(String(42), nullable=False, index=True)
-    amount = Column(BigInteger, nullable=False)  # USDC with 6 decimals
+    amount = Column(BigInteger, nullable=False)  # Amount in vault's token decimals
     tx_hash = Column(String(66), nullable=False, unique=True)
     block_number = Column(BigInteger)
 
