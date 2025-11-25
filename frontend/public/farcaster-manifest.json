@@ -8,6 +8,7 @@
     "version": "1",
     "name": "Banka",
     "iconUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/icon.png",
+    "imageUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/splash.png",
     "splashImageUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev/splash.png",
     "splashBackgroundColor": "#4F46E5",
     "homeUrl": "https://rene-underbred-nonsynodically.ngrok-free.dev",
