@@ -51,6 +51,8 @@ const FACTORY_ABI = [
       { "indexed": false, "internalType": "uint256", "name": "goalAmount", "type": "uint256" },
       { "indexed": false, "internalType": "string", "name": "metadataURI", "type": "string" },
       { "indexed": false, "internalType": "string", "name": "description", "type": "string" },
+      { "indexed": true, "internalType": "address", "name": "token", "type": "address" },
+      { "indexed": false, "internalType": "uint8", "name": "tokenDecimals", "type": "uint8" },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "vaultIndex", "type": "uint256" }
     ],
