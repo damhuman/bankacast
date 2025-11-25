@@ -14,19 +14,17 @@
     "homeUrl": "https://bankacast.netlify.app",
     "webhookUrl": "https://bankacast.netlify.app/api/webhook"
   },
-  "metadata": {
-    "title": "Banka - Social Savings on Base",
-    "subtitle": "Transparent fundraising with automatic yield generation",
-    "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave V3. Share on Farcaster and watch contributions grow with full on-chain transparency.",
-    "tagline": "Save together, earn together",
-    "tags": ["defi", "savings", "social", "crowdfunding", "aave"],
-    "screenshotUrls": [
-      "https://bankacast.netlify.app/splash.png"
-    ],
-    "heroImageUrl": "https://bankacast.netlify.app/splash.png",
-    "ogTitle": "Banka - Social Savings & Fundraising on Base",
-    "ogDescription": "Transparent, yield-generating donation platform. Create vaults in ETH/USDC with automatic Aave yields.",
-    "ogImageUrl": "https://bankacast.netlify.app/splash.png",
-    "noindex": false
-  }
+  "title": "Banka - Social Savings on Base",
+  "subtitle": "Transparent fundraising with automatic yield generation",
+  "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave V3. Share on Farcaster and watch contributions grow with full on-chain transparency.",
+  "tagline": "Save together, earn together",
+  "tags": ["defi", "savings", "social", "crowdfunding", "aave"],
+  "screenshotUrls": [
+    "https://bankacast.netlify.app/splash.png"
+  ],
+  "heroImageUrl": "https://bankacast.netlify.app/splash.png",
+  "ogTitle": "Banka - Social Savings & Fundraising on Base",
+  "ogDescription": "Transparent, yield-generating donation platform. Create vaults in ETH/USDC with automatic Aave yields.",
+  "ogImageUrl": "https://bankacast.netlify.app/splash.png",
+  "noindex": false
 }
