@@ -43,6 +43,13 @@ export default function Home() {
           >
             Discover Vaults
           </Link>
+
+          <Link
+            href="/contributions"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[160px]"
+          >
+            My Contributions
+          </Link>
         </div>
 
         {/* Features grid with improved spacing and shorter copy */}
