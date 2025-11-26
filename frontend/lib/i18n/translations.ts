@@ -67,7 +67,6 @@ export const translations = {
     contribute: 'Contribute',
 
     // Contributions page
-    myContributions: 'My Contributions',
     contributionsDesc: 'Bankas you\'ve supported and their current progress',
     connectWalletPrompt: 'Connect Your Wallet',
     connectWalletDesc: 'Connect your wallet to see bankas you\'ve contributed to',
@@ -196,7 +195,6 @@ export const translations = {
     contribute: 'Задонатити',
 
     // Contributions page
-    myContributions: 'Мої Внески',
     contributionsDesc: 'Банки які ви підтримали та їх поточний прогрес',
     connectWalletPrompt: 'Підключіть Гаманець',
     connectWalletDesc: 'Підключіть гаманець щоб побачити банки в які ви задонатили',
