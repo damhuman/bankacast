@@ -28,7 +28,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: TranslationKey, replacements?: Record<string, string>): string => {
-    let text = translations[language][key] || translations.en[key] || key;
+    let text: string = translations[language][key] || translations.en[key] || key;
 
     // Replace placeholders like {token}
     if (replacements) {
