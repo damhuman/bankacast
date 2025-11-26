@@ -526,23 +526,35 @@ export default function VaultPage({ params }: { params: { id: string } }) {
           {/* Share Section */}
           <div className="border-t pt-6">
             <h3 className="text-sm font-semibold mb-3">Share on Farcaster</h3>
-            <div className="flex gap-2">
+            <div className="space-y-2">
               <button
                 onClick={handleCopy}
-                className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                className="w-full bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
               >
                 {copied ? 'Copied!' : 'Copy Frame URL'}
               </button>
-              <button
-                onClick={() => {
-                  const shareText = `Check out this savings vault on Banka!\n\n${frameUrl}`;
-                  const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
-                  window.open(url, '_blank');
-                }}
-                className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition"
-              >
-                Share on Warpcast
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    const shareText = `Check out this savings vault on Banka!\n\n${frameUrl}`;
+                    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+                    window.open(url, '_blank');
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition"
+                >
+                  Share on Warpcast
+                </button>
+                <button
+                  onClick={() => {
+                    // Open in Coinbase Wallet / Base app
+                    const baseAppUrl = `https://wallet.coinbase.com/dapp?url=${encodeURIComponent(frameUrl)}`;
+                    window.open(baseAppUrl, '_blank');
+                  }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  Open in Base App
+                </button>
+              </div>
             </div>
           </div>
         </div>
