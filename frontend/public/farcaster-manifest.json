@@ -14,8 +14,11 @@
     "iconUrl": "https://bankacast.netlify.app/icon.png",
     "splashImageUrl": "https://bankacast.netlify.app/splash.png",
     "splashBackgroundColor": "#4F46E5",
-    "primaryCategory": "defi",
-    "tags": ["defi", "savings", "social", "crowdfunding", "aave"]
+    "primaryCategory": "finance",
+    "tags": ["defi", "savings", "social", "crowdfunding", "aave"],
+    "subtitle": "Fundraising with auto yield",
+    "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave V3. Share on Farcaster and watch contributions grow with full on-chain transparency.",
+    "webhookUrl": "https://bankacast.netlify.app/api/webhook"
   },
   "frame": {
     "version": "1",
