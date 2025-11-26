@@ -6,7 +6,6 @@ export const translations = {
     // Home page
     tagline: 'Social savings bankas with automated yield on Base',
     createBanka: 'Create Banka',
-    discoverBankas: 'Discover Bankas',
     myContributions: 'My Contributions',
 
     // Features
@@ -136,7 +135,6 @@ export const translations = {
     // Home page
     tagline: 'Соціальні накопичувальні банки з автоматичним yield на Base',
     createBanka: 'Створити Банку',
-    discoverBankas: 'Переглянути Банки',
     myContributions: 'Мої Внески',
 
     // Features
