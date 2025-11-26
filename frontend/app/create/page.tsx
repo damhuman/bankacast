@@ -315,7 +315,7 @@ export default function CreateVaultPage() {
             </label>
             <div className="relative">
               {selectedToken === 'USDC' && (
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-lg">
                   $
                 </span>
               )}
@@ -326,14 +326,85 @@ export default function CreateVaultPage() {
                 required
                 min="0.0001"
                 step={selectedToken === 'ETH' ? '0.001' : '0.01'}
-                className={`w-full ${selectedToken === 'USDC' ? 'pl-8' : 'pl-4'} pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300`}
+                className={`w-full ${selectedToken === 'USDC' ? 'pl-8' : 'pl-4'} pr-20 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 text-lg font-semibold`}
                 placeholder={selectedToken === 'ETH' ? '1.0' : '1000'}
               />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                {selectedToken}
+              </span>
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+
+            {/* Quick preset buttons */}
+            <div className="flex gap-2 mt-3">
+              {selectedToken === 'USDC' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('100')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    $100
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('500')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    $500
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('1000')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    $1,000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('5000')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    $5,000
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('0.01')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    0.01 ETH
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('0.1')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    0.1 ETH
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('1')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    1 ETH
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('5')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    5 ETH
+                  </button>
+                </>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">
               {selectedToken === 'ETH'
-                ? 'Target amount in ETH (e.g., 1.0 for 1 ETH)'
-                : 'Target amount in USDC (e.g., 1000 for $1,000)'}
+                ? '💡 Click a preset or enter custom amount'
+                : '💡 Click a preset or enter custom amount'}
             </p>
           </div>
 
