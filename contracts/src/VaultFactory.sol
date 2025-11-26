@@ -43,6 +43,7 @@ contract VaultFactory {
         string description,
         address indexed token,
         uint8 tokenDecimals,
+        address beneficiary,
         uint256 timestamp,
         uint256 vaultIndex
     );
@@ -81,6 +82,7 @@ contract VaultFactory {
      * @param _description Detailed description
      * @param _token Token address (address(0) for ETH)
      * @param _tokenDecimals Token decimals (6 or 18)
+     * @param _beneficiary Address that receives funds (address(0) defaults to creator)
      * @return vault Address of newly deployed vault
      */
     function createVault(
@@ -88,7 +90,8 @@ contract VaultFactory {
         string calldata _metadataURI,
         string calldata _description,
         address _token,
-        uint8 _tokenDecimals
+        uint8 _tokenDecimals,
+        address _beneficiary
     ) external returns (address vault) {
         // Validation
         if (_goalAmount == 0) revert InvalidGoalAmount();
@@ -107,7 +110,8 @@ contract VaultFactory {
             _description,
             aavePool,
             _token,
-            _tokenDecimals
+            _tokenDecimals,
+            _beneficiary
         );
 
         // Track vault
@@ -124,6 +128,7 @@ contract VaultFactory {
             _description,
             _token,
             _tokenDecimals,
+            _beneficiary == address(0) ? msg.sender : _beneficiary,
             block.timestamp,
             vaultIndex
         );

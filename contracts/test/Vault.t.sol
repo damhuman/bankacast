@@ -35,20 +35,22 @@ contract VaultTest is Test {
             "ipfs://test",
             "Test vault description",
             mockUsdc,
-            6
+            6,
+            address(0) // beneficiary defaults to creator
         );
 
         assertTrue(vault != address(0));
         assertEq(Vault(payable(vault)).creator(), creator);
         assertEq(Vault(payable(vault)).goalAmount(), 1000 * 1e6);
         assertEq(Vault(payable(vault)).description(), "Test vault description");
+        assertEq(Vault(payable(vault)).getBeneficiary(), creator); // Should default to creator
     }
 
     function testVaultCount() public {
         vm.startPrank(creator);
 
-        factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6);
-        factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6);
+        factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6, address(0));
+        factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6, address(0));
 
         vm.stopPrank();
 
@@ -58,8 +60,8 @@ contract VaultTest is Test {
     function testGetUserVaults() public {
         vm.startPrank(creator);
 
-        address vault1 = factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6);
-        address vault2 = factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6);
+        address vault1 = factory.createVault(1000 * 1e6, "ipfs://test1", "Description 1", mockUsdc, 6, address(0));
+        address vault2 = factory.createVault(2000 * 1e6, "ipfs://test2", "Description 2", mockUsdc, 6, address(0));
 
         vm.stopPrank();
 
@@ -79,7 +81,8 @@ contract VaultTest is Test {
             "ipfs://test",
             "Description",
             mockUsdc,
-            6
+            6,
+            address(0)
         );
     }
 
@@ -93,7 +96,43 @@ contract VaultTest is Test {
             "",
             "Description",
             mockUsdc,
-            6
+            6,
+            address(0)
         );
+    }
+
+    function testBeneficiaryDefaultsToCreator() public {
+        vm.prank(creator);
+
+        address vault = factory.createVault(
+            1000 * 1e6,
+            "ipfs://test",
+            "Test vault",
+            mockUsdc,
+            6,
+            address(0) // No beneficiary specified
+        );
+
+        // Beneficiary should default to creator
+        assertEq(Vault(payable(vault)).getBeneficiary(), creator);
+    }
+
+    function testCustomBeneficiary() public {
+        address beneficiary = address(0x777);
+        vm.prank(creator);
+
+        address vault = factory.createVault(
+            1000 * 1e6,
+            "ipfs://test",
+            "Test vault",
+            mockUsdc,
+            6,
+            beneficiary // Custom beneficiary
+        );
+
+        // Beneficiary should be the specified address
+        assertEq(Vault(payable(vault)).getBeneficiary(), beneficiary);
+        // Creator should still be the creator
+        assertEq(Vault(payable(vault)).creator(), creator);
     }
 }

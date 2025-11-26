@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
 import { useAccount, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits, decodeEventLog } from 'viem';
+import { parseUnits, decodeEventLog, isAddress } from 'viem';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
@@ -36,7 +36,8 @@ const FACTORY_ABI = [
       { "internalType": "string", "name": "metadataURI", "type": "string" },
       { "internalType": "string", "name": "description", "type": "string" },
       { "internalType": "address", "name": "token", "type": "address" },
-      { "internalType": "uint8", "name": "tokenDecimals", "type": "uint8" }
+      { "internalType": "uint8", "name": "tokenDecimals", "type": "uint8" },
+      { "internalType": "address", "name": "beneficiary", "type": "address" }
     ],
     "name": "createVault",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
@@ -53,6 +54,7 @@ const FACTORY_ABI = [
       { "indexed": false, "internalType": "string", "name": "description", "type": "string" },
       { "indexed": true, "internalType": "address", "name": "token", "type": "address" },
       { "indexed": false, "internalType": "uint8", "name": "tokenDecimals", "type": "uint8" },
+      { "indexed": false, "internalType": "address", "name": "beneficiary", "type": "address" },
       { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" },
       { "indexed": false, "internalType": "uint256", "name": "vaultIndex", "type": "uint256" }
     ],
@@ -72,6 +74,8 @@ export default function CreateVaultPage() {
   const [description, setDescription] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<'USDC' | 'ETH'>('USDC');
+  const [useBeneficiary, setUseBeneficiary] = useState(false);
+  const [beneficiaryAddress, setBeneficiaryAddress] = useState('');
 
   // Redirect to vault page after transaction is confirmed
   useEffect(() => {
@@ -120,7 +124,7 @@ export default function CreateVaultPage() {
     e.preventDefault();
 
     // Check if wallet is connected
-    if (!isConnected) {
+    if (!isConnected || !address) {
       return;
     }
 
@@ -129,6 +133,16 @@ export default function CreateVaultPage() {
       console.log('Switching to Base Sepolia...');
       switchChain({ chainId: CHAIN_ID });
       return;
+    }
+
+    // Validate beneficiary address if specified
+    let finalBeneficiary: `0x${string}` = '0x0000000000000000000000000000000000000000';
+    if (useBeneficiary) {
+      if (!beneficiaryAddress || !isAddress(beneficiaryAddress)) {
+        alert('Please enter a valid beneficiary address');
+        return;
+      }
+      finalBeneficiary = beneficiaryAddress as `0x${string}`;
     }
 
     // Get token configuration
@@ -144,6 +158,7 @@ export default function CreateVaultPage() {
       description,
       token: tokenConfig.address,
       decimals: tokenConfig.decimals,
+      beneficiary: finalBeneficiary,
       chainId: CHAIN_ID,
     });
 
@@ -152,7 +167,7 @@ export default function CreateVaultPage() {
       address: FACTORY_ADDRESS,
       abi: FACTORY_ABI,
       functionName: 'createVault',
-      args: [goalAmountWei, `db://${title}`, description, tokenConfig.address, tokenConfig.decimals],
+      args: [goalAmountWei, `db://${title}`, description, tokenConfig.address, tokenConfig.decimals, finalBeneficiary],
     });
   };
 
@@ -320,6 +335,44 @@ export default function CreateVaultPage() {
                 ? 'Target amount in ETH (e.g., 1.0 for 1 ETH)'
                 : 'Target amount in USDC (e.g., 1000 for $1,000)'}
             </p>
+          </div>
+
+          {/* Beneficiary Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <input
+                type="checkbox"
+                id="useBeneficiary"
+                checked={useBeneficiary}
+                onChange={(e) => setUseBeneficiary(e.target.checked)}
+                className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+              <label htmlFor="useBeneficiary" className="text-sm font-semibold text-gray-900">
+                Send funds to a different address
+              </label>
+            </div>
+
+            {useBeneficiary && (
+              <div className="mt-3">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Beneficiary Address
+                </label>
+                <input
+                  type="text"
+                  value={beneficiaryAddress}
+                  onChange={(e) => setBeneficiaryAddress(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                  <span>💡</span>
+                  When you smash or withdraw this vault, funds will go to this address instead of yours
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  <strong>Use cases:</strong> Donation campaigns, gifts, organizational fundraising
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Enhanced "How it works" section */}

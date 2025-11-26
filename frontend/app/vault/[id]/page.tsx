@@ -108,6 +108,13 @@ const VAULT_ABI = [
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBeneficiary",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 
@@ -119,6 +126,7 @@ interface Contributor {
 interface VaultData {
   address: string;
   creator: string;
+  beneficiary: string;
   goalAmount: bigint;
   title: string;
   description: string;
@@ -174,6 +182,7 @@ export default function VaultPage({ params }: { params: { id: string } }) {
       // Fetch all vault data in parallel
       const [
         creator,
+        beneficiary,
         goalAmount,
         metadataURI,
         description,
@@ -187,6 +196,11 @@ export default function VaultPage({ params }: { params: { id: string } }) {
           address: vaultAddress,
           abi: VAULT_ABI,
           functionName: 'creator',
+        }),
+        publicClient.readContract({
+          address: vaultAddress,
+          abi: VAULT_ABI,
+          functionName: 'getBeneficiary',
         }),
         publicClient.readContract({
           address: vaultAddress,
@@ -257,6 +271,7 @@ export default function VaultPage({ params }: { params: { id: string } }) {
       setVault({
         address: vaultAddress,
         creator: creator as string,
+        beneficiary: beneficiary as string,
         goalAmount: goalAmount as bigint,
         title,
         description: description as string,
@@ -376,6 +391,27 @@ export default function VaultPage({ params }: { params: { id: string } }) {
               <p className="text-gray-600 mb-4">{vault.description}</p>
             )}
             <p className="text-xs text-gray-500 font-mono break-all">{vault.address}</p>
+
+            {/* Beneficiary Badge - Show if beneficiary is different from creator */}
+            {vault.beneficiary.toLowerCase() !== vault.creator.toLowerCase() && (
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🎁</span>
+                  <div className="flex-1">
+                    <p className="font-bold text-purple-900 mb-1">Beneficiary Vault</p>
+                    <p className="text-sm text-purple-700">
+                      Funds will be sent to:
+                    </p>
+                    <p className="font-mono text-xs mt-2 bg-purple-100 px-3 py-2 rounded break-all text-purple-900">
+                      {vault.beneficiary}
+                    </p>
+                    <p className="text-xs text-purple-600 mt-2">
+                      The vault creator can manage it, but all funds go to the beneficiary address above.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {isCompleted && (
               <div className="bg-gray-50 text-gray-800 px-4 py-3 rounded mt-4">

@@ -15,6 +15,7 @@ contract Vault is Initializable {
     // ============ State Variables ============
 
     address public creator;
+    address public beneficiary; // Address that receives funds when vault is withdrawn/smashed
     uint256 public goalAmount;
     string public metadataURI; // DB ID for title
     string public description; // Detailed description
@@ -90,6 +91,7 @@ contract Vault is Initializable {
      * @param _aavePool Aave V3 Pool address
      * @param _token Token address (address(0) for ETH)
      * @param _tokenDecimals Token decimals (6 for USDC, 18 for ETH)
+     * @param _beneficiary Address that receives funds (defaults to creator if address(0))
      */
     function initialize(
         address _creator,
@@ -98,7 +100,8 @@ contract Vault is Initializable {
         string calldata _description,
         address _aavePool,
         address _token,
-        uint8 _tokenDecimals
+        uint8 _tokenDecimals,
+        address _beneficiary
     ) external initializer {
         creator = _creator;
         goalAmount = _goalAmount;
@@ -107,6 +110,9 @@ contract Vault is Initializable {
         aavePool = _aavePool;
         token = _token;
         tokenDecimals = _tokenDecimals;
+
+        // If beneficiary not specified, creator receives funds
+        beneficiary = _beneficiary == address(0) ? _creator : _beneficiary;
     }
 
     // ============ Core Functions ============
@@ -177,21 +183,21 @@ contract Vault is Initializable {
         uint256 aTokenBalance = IERC20(aToken).balanceOf(address(this));
 
         if (token == address(0)) {
-            // ETH vault: withdraw WETH from Aave, unwrap, send ETH
+            // ETH vault: withdraw WETH from Aave, unwrap, send ETH to beneficiary
             IPool(aavePool).withdraw(WETH, aTokenBalance, address(this));
             IWETH(WETH).withdraw(aTokenBalance);
 
-            (bool success, ) = creator.call{value: aTokenBalance}("");
+            (bool success, ) = beneficiary.call{value: aTokenBalance}("");
             if (!success) revert TransferFailed();
         } else {
-            // ERC20 vault: withdraw directly to creator
-            IPool(aavePool).withdraw(token, aTokenBalance, creator);
+            // ERC20 vault: withdraw directly to beneficiary
+            IPool(aavePool).withdraw(token, aTokenBalance, beneficiary);
         }
 
         uint256 principal = totalContributed;
         uint256 yield = aTokenBalance > principal ? aTokenBalance - principal : 0;
 
-        emit Withdrawn(creator, principal, yield, aTokenBalance, block.timestamp);
+        emit Withdrawn(beneficiary, principal, yield, aTokenBalance, block.timestamp);
     }
 
     /**
@@ -206,22 +212,22 @@ contract Vault is Initializable {
         // Withdraw from Aave if there are funds
         if (aTokenBalance > 0) {
             if (token == address(0)) {
-                // ETH vault: withdraw WETH, unwrap, send ETH
+                // ETH vault: withdraw WETH, unwrap, send ETH to beneficiary
                 IPool(aavePool).withdraw(WETH, aTokenBalance, address(this));
                 IWETH(WETH).withdraw(aTokenBalance);
 
-                (bool success, ) = creator.call{value: aTokenBalance}("");
+                (bool success, ) = beneficiary.call{value: aTokenBalance}("");
                 if (!success) revert TransferFailed();
             } else {
-                // ERC20 vault: withdraw directly to creator
-                IPool(aavePool).withdraw(token, aTokenBalance, creator);
+                // ERC20 vault: withdraw directly to beneficiary
+                IPool(aavePool).withdraw(token, aTokenBalance, beneficiary);
             }
         }
 
         uint256 principal = totalContributed;
         uint256 yield = aTokenBalance > principal ? aTokenBalance - principal : 0;
 
-        emit Smashed(creator, principal, yield, aTokenBalance, block.timestamp);
+        emit Smashed(beneficiary, principal, yield, aTokenBalance, block.timestamp);
     }
 
     // ============ View Functions ============
@@ -343,6 +349,14 @@ contract Vault is Initializable {
         tokenAddress = token;
         decimals = tokenDecimals;
         symbol = token == address(0) ? "ETH" : "USDC";
+    }
+
+    /**
+     * @notice Get beneficiary address
+     * @return Address that will receive funds when vault is withdrawn/smashed
+     */
+    function getBeneficiary() external view returns (address) {
+        return beneficiary;
     }
 
     /**
