@@ -229,6 +229,13 @@ export default function ContributeModal({
                   <>
                     <button
                       type="button"
+                      onClick={() => setAmount('0.00001')}
+                      className="flex-1 px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      0.00001
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setAmount('0.001')}
                       className="flex-1 px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition-colors"
                     >

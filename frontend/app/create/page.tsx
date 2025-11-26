@@ -373,31 +373,31 @@ export default function CreateVaultPage() {
                 <>
                   <button
                     type="button"
+                    onClick={() => setGoalAmount('0.00001')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    0.00001
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount('0.001')}
+                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    0.001
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setGoalAmount('0.01')}
                     className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
                   >
-                    0.01 ETH
+                    0.01
                   </button>
                   <button
                     type="button"
                     onClick={() => setGoalAmount('0.1')}
                     className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
                   >
-                    0.1 ETH
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGoalAmount('1')}
-                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    1 ETH
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGoalAmount('5')}
-                    className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    5 ETH
+                    0.1
                   </button>
                 </>
               )}
