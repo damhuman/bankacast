@@ -17,7 +17,7 @@
     "primaryCategory": "finance",
     "tags": ["defi", "savings", "social", "crowdfunding", "aave"],
     "subtitle": "Fundraising with auto yield",
-    "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave V3. Share on Farcaster and watch contributions grow with full on-chain transparency.",
+    "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave. Share on Farcaster and watch contributions grow with full onchain transparency.",
     "webhookUrl": "https://bankacast.netlify.app/api/webhook"
   },
   "frame": {
@@ -32,7 +32,7 @@
   },
   "title": "Banka - Social Savings on Base",
   "subtitle": "Fundraising with auto yield",
-  "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave V3. Share on Farcaster and watch contributions grow with full on-chain transparency.",
+  "description": "Create donation vaults in ETH or USDC that automatically earn yield through Aave. Share on Farcaster and watch contributions grow with full onchain transparency.",
   "tagline": "Save together, earn together",
   "tags": ["defi", "savings", "social", "crowdfunding", "aave"],
   "screenshotUrls": [
