@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
 import { useAccount, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits, decodeEventLog, isAddress } from 'viem';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
@@ -65,6 +66,7 @@ const FACTORY_ABI = [
 
 export default function CreateVaultPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { address, isConnected, chain } = useAccount();
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { switchChain } = useSwitchChain();
@@ -139,7 +141,7 @@ export default function CreateVaultPage() {
     let finalBeneficiary: `0x${string}` = '0x0000000000000000000000000000000000000000';
     if (useBeneficiary) {
       if (!beneficiaryAddress || !isAddress(beneficiaryAddress)) {
-        alert('Please enter a valid beneficiary address');
+        alert(t('invalidAddress'));
         return;
       }
       finalBeneficiary = beneficiaryAddress as `0x${string}`;
@@ -185,17 +187,17 @@ export default function CreateVaultPage() {
             className="inline-flex items-center gap-2 text-primary hover:text-blue-600 transition-colors font-medium group"
           >
             <span className="transition-transform group-hover:-translate-x-1">←</span>
-            <span>Back to home</span>
+            <span>{t('backToHome')}</span>
           </Link>
         </div>
 
         {/* Header with better hierarchy */}
         <div className="mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Create Savings Vault
+            {t('createNewBanka')}
           </h1>
           <p className="text-lg text-gray-600">
-            Set your goal and start saving together
+            {t('createBankaDesc')}
           </p>
         </div>
 
@@ -205,8 +207,8 @@ export default function CreateVaultPage() {
             <div className="flex items-start gap-3">
               <span className="text-2xl">⚠️</span>
               <div>
-                <p className="font-bold text-base">Transaction Error</p>
-                <p className="text-sm mt-1 leading-relaxed">{writeError.message || 'Transaction failed'}</p>
+                <p className="font-bold text-base">{t('transactionError')}</p>
+                <p className="text-sm mt-1 leading-relaxed">{writeError.message || t('transactionFailed')}</p>
               </div>
             </div>
           </div>
@@ -218,7 +220,7 @@ export default function CreateVaultPage() {
             <div className="flex items-start gap-3">
               <span className="text-2xl">✅</span>
               <div className="flex-1">
-                <p className="font-bold text-base">Transaction Submitted!</p>
+                <p className="font-bold text-base">{t('transactionSubmitted')}</p>
                 <p className="text-sm mt-2 font-mono break-all bg-white/50 px-2 py-1 rounded">
                   {hash}
                 </p>
@@ -228,7 +230,7 @@ export default function CreateVaultPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm font-semibold text-green-700 hover:text-green-900 mt-3 transition-colors"
                 >
-                  View on BaseScan
+                  {t('viewOnBaseScan')}
                   <span>→</span>
                 </a>
               </div>
@@ -238,10 +240,10 @@ export default function CreateVaultPage() {
 
         {/* Enhanced form card */}
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10">
-          {/* Vault Title */}
+          {/* Banka Title */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Vault Title
+              {t('bankaTitle')}
             </label>
             <input
               type="text"
@@ -249,14 +251,14 @@ export default function CreateVaultPage() {
               onChange={(e) => setTitle(e.target.value)}
               required
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300"
-              placeholder="e.g., MacBook Fund, Vacation Savings, New Car"
+              placeholder={t('bankaTitlePlaceholder')}
             />
           </div>
 
           {/* Description */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Description
+              {t('description')}
             </label>
             <textarea
               value={description}
@@ -264,18 +266,18 @@ export default function CreateVaultPage() {
               required
               rows={4}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-300 resize-none"
-              placeholder="Describe what you're saving for and why..."
+              placeholder={t('descriptionPlaceholder')}
             />
             <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
               <span>💡</span>
-              Tell your story to motivate contributors
+              {t('descriptionHint')}
             </p>
           </div>
 
           {/* Token Selector */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Select Token
+              {t('selectToken')}
             </label>
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -311,7 +313,7 @@ export default function CreateVaultPage() {
           {/* Goal Amount */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Goal Amount ({selectedToken})
+              {t('goalAmount')} ({selectedToken})
             </label>
             <div className="relative">
               {selectedToken === 'USDC' && (
@@ -402,9 +404,7 @@ export default function CreateVaultPage() {
             </div>
 
             <p className="text-xs text-gray-500 mt-2">
-              {selectedToken === 'ETH'
-                ? '💡 Click a preset or enter custom amount'
-                : '💡 Click a preset or enter custom amount'}
+              💡 {t('goalAmountHint')}
             </p>
           </div>
 
@@ -419,14 +419,14 @@ export default function CreateVaultPage() {
                 className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded"
               />
               <label htmlFor="useBeneficiary" className="text-sm font-semibold text-gray-900">
-                Send funds to a different address
+                {t('sendToDifferentAddress')}
               </label>
             </div>
 
             {useBeneficiary && (
               <div className="mt-3">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Beneficiary Address
+                  {t('beneficiaryAddress')}
                 </label>
                 <input
                   type="text"
@@ -437,10 +437,10 @@ export default function CreateVaultPage() {
                 />
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                   <span>💡</span>
-                  When you smash or withdraw this vault, funds will go to this address instead of yours
+                  {t('beneficiaryHint')}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  <strong>Use cases:</strong> Donation campaigns, gifts, organizational fundraising
+                  {t('beneficiaryUseCases')}
                 </p>
               </div>
             )}
@@ -450,28 +450,28 @@ export default function CreateVaultPage() {
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 mb-8 border border-blue-100">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="text-xl">✨</span>
-              How it works
+              {t('howItWorks')}
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                <p className="text-sm text-gray-700 leading-relaxed">Create your vault with a savings goal</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{t('step1')}</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                <p className="text-sm text-gray-700 leading-relaxed">Share the vault link on Farcaster</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{t('step2')}</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                <p className="text-sm text-gray-700 leading-relaxed">Friends contribute USDC directly</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{t('step3')}</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
-                <p className="text-sm text-gray-700 leading-relaxed">Funds auto-generate yield via Aave V3</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{t('step4')}</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold">5</span>
-                <p className="text-sm text-gray-700 leading-relaxed">Withdraw when goal is reached</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{t('step5')}</p>
               </div>
             </div>
           </div>
@@ -490,10 +490,10 @@ export default function CreateVaultPage() {
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Waiting for signature...
+                  {t('creating')}
                 </span>
               ) : (
-                'Create Vault'
+                t('createBanka')
               )}
             </button>
           )}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePublicClient } from 'wagmi';
 import { formatUnits } from 'viem';
 import ContributeModal from '@/components/ContributeModal';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '84532');
@@ -124,6 +125,7 @@ interface ContributeModalData {
 }
 
 export default function DiscoverPage() {
+  const { t } = useLanguage();
   const publicClient = usePublicClient({ chainId: CHAIN_ID });
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [loading, setLoading] = useState(true);
@@ -288,17 +290,17 @@ export default function DiscoverPage() {
             className="inline-flex items-center gap-2 text-primary hover:text-blue-600 transition-colors font-medium group"
           >
             <span className="transition-transform group-hover:-translate-x-1">←</span>
-            <span>Back to home</span>
+            <span>{t('backToHome')}</span>
           </Link>
         </div>
 
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Discover Vaults
+            {t('discoverBankas')}
           </h1>
           <p className="text-lg text-gray-600">
-            Browse active savings vaults and contribute to help reach goals
+            {t('discoverDesc')}
           </p>
         </div>
 
@@ -306,7 +308,7 @@ export default function DiscoverPage() {
         {loading && (
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
-            <p className="mt-6 text-lg text-gray-600 font-medium">Loading vaults from blockchain...</p>
+            <p className="mt-6 text-lg text-gray-600 font-medium">{t('loadingBankas')}</p>
           </div>
         )}
 
@@ -316,7 +318,7 @@ export default function DiscoverPage() {
             <div className="flex items-start gap-3">
               <span className="text-2xl">⚠️</span>
               <div>
-                <p className="font-bold text-base">Error Loading Vaults</p>
+                <p className="font-bold text-base">{t('errorLoadingBankas')}</p>
                 <p className="text-sm mt-1 leading-relaxed">{error}</p>
               </div>
             </div>
@@ -327,13 +329,13 @@ export default function DiscoverPage() {
         {!loading && !error && vaults.length === 0 && (
           <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
             <div className="text-6xl mb-6">🏦</div>
-            <p className="text-2xl font-bold text-gray-900 mb-3">No vaults found yet</p>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">Be the first to create a savings vault and start earning yield!</p>
+            <p className="text-2xl font-bold text-gray-900 mb-3">{t('noBankasYet')}</p>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">{t('noBankasDesc')}</p>
             <Link
               href="/create"
               className="inline-block bg-primary text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
             >
-              Create First Vault
+              {t('createFirstBanka')}
             </Link>
           </div>
         )}
@@ -374,7 +376,7 @@ export default function DiscoverPage() {
                   {/* Progress bar */}
                   <div className="mb-5">
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-600 font-medium">Progress</span>
+                      <span className="text-gray-600 font-medium">{t('progress')}</span>
                       <span className="font-bold text-primary">{vault.progress.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -390,7 +392,7 @@ export default function DiscoverPage() {
                     <div className="flex justify-between text-sm items-center">
                       <span className="text-gray-600 flex items-center gap-1">
                         <span>💰</span>
-                        Raised
+                        {t('raised')}
                       </span>
                       <span className="font-bold text-gray-900">
                         {formatAmount(vault.totalContributed, vault.decimals)} / {formatAmount(vault.goalAmount, vault.decimals)} {vault.tokenSymbol}
@@ -399,7 +401,7 @@ export default function DiscoverPage() {
                     <div className="flex justify-between text-sm items-center">
                       <span className="text-gray-600 flex items-center gap-1">
                         <span>📈</span>
-                        Yield Earned
+                        {t('yieldEarned')}
                       </span>
                       <span className="font-bold text-green-600">
                         +{formatAmount(vault.yieldEarned, vault.decimals)} {vault.tokenSymbol}
@@ -408,7 +410,7 @@ export default function DiscoverPage() {
                     <div className="flex justify-between text-sm items-center">
                       <span className="text-gray-600 flex items-center gap-1">
                         <span>💹</span>
-                        Aave APY
+                        {t('aaveAPY')}
                       </span>
                       <span className="font-bold text-blue-600">
                         {vault.apy > 0n ? `${formatAPY(vault.apy)}%` : 'N/A'}
@@ -417,7 +419,7 @@ export default function DiscoverPage() {
                     <div className="flex justify-between text-sm items-center">
                       <span className="text-gray-600 flex items-center gap-1">
                         <span>👥</span>
-                        Contributors
+                        {t('contributors')}
                       </span>
                       <span className="font-bold text-gray-900">{vault.contributorCount}</span>
                     </div>
@@ -426,13 +428,13 @@ export default function DiscoverPage() {
                   {/* Status badges */}
                   {goalReached && !isCompleted && (
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 text-sm px-4 py-2 rounded-xl mb-4 font-semibold text-center">
-                      ✅ Goal Reached!
+                      ✅ {t('goalReached')}
                     </div>
                   )}
 
                   {isCompleted && (
                     <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-800 text-sm px-4 py-2 rounded-xl mb-4 font-semibold text-center">
-                      🎉 Completed
+                      🎉 {t('completed')}
                     </div>
                   )}
 
@@ -442,7 +444,7 @@ export default function DiscoverPage() {
                       href={`/vault/${vault.address}`}
                       className="flex-1 bg-primary text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all duration-200 text-center shadow-md hover:shadow-lg hover:scale-105"
                     >
-                      View Details
+                      {t('viewDetails')}
                     </Link>
                     {!isCompleted && (
                       <button
@@ -457,7 +459,7 @@ export default function DiscoverPage() {
                           tokenSymbol: vault.tokenSymbol,
                         })}
                       >
-                        Contribute
+                        {t('contribute')}
                       </button>
                     )}
                   </div>

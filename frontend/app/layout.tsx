@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { FarcasterProvider } from '@/components/FarcasterProvider'
 import { Web3Provider } from '@/components/Web3Provider'
+import { LanguageProvider } from '@/lib/i18n/LanguageContext'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -81,11 +83,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Web3Provider>
-          <FarcasterProvider>
-            {children}
-          </FarcasterProvider>
-        </Web3Provider>
+        <LanguageProvider>
+          <Web3Provider>
+            <FarcasterProvider>
+              <LanguageSwitcher />
+              {children}
+            </FarcasterProvider>
+          </Web3Provider>
+        </LanguageProvider>
       </body>
     </html>
   )

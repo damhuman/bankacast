@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 md:p-24 relative overflow-hidden">
       {/* Background gradient treatment */}
@@ -25,7 +30,7 @@ export default function Home() {
 
         {/* Tagline with better spacing */}
         <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-xl mx-auto leading-relaxed">
-          Social savings vaults with automated yield on Base
+          {t('tagline')}
         </p>
 
         {/* CTA Buttons with improved styling */}
@@ -34,21 +39,21 @@ export default function Home() {
             href="/create"
             className="bg-primary text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[160px]"
           >
-            Create Vault
+            {t('createBanka')}
           </Link>
 
           <Link
             href="/discover"
             className="bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold border-2 border-gray-200 hover:border-primary hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg min-w-[160px]"
           >
-            Discover Vaults
+            {t('discoverBankas')}
           </Link>
 
           <Link
             href="/contributions"
             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[160px]"
           >
-            My Contributions
+            {t('myContributions')}
           </Link>
         </div>
 
@@ -56,25 +61,25 @@ export default function Home() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           <div className="group text-center md:text-left">
             <div className="text-4xl mb-3 transition-transform group-hover:scale-110 duration-200 inline-block">💰</div>
-            <h3 className="font-bold text-lg mb-2 text-gray-900">Auto Yield</h3>
+            <h3 className="font-bold text-lg mb-2 text-gray-900">{t('autoYield')}</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Earn yield automatically via Aave V3
+              {t('autoYieldDesc')}
             </p>
           </div>
 
           <div className="group text-center md:text-left">
             <div className="text-4xl mb-3 transition-transform group-hover:scale-110 duration-200 inline-block">👥</div>
-            <h3 className="font-bold text-lg mb-2 text-gray-900">Social Proof</h3>
+            <h3 className="font-bold text-lg mb-2 text-gray-900">{t('socialProof')}</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Track contributors and progress together
+              {t('socialProofDesc')}
             </p>
           </div>
 
           <div className="group text-center md:text-left">
             <div className="text-4xl mb-3 transition-transform group-hover:scale-110 duration-200 inline-block">🔒</div>
-            <h3 className="font-bold text-lg mb-2 text-gray-900">Trustless</h3>
+            <h3 className="font-bold text-lg mb-2 text-gray-900">{t('trustless')}</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Your funds secured by smart contracts
+              {t('trustlessDesc')}
             </p>
           </div>
         </div>
@@ -83,7 +88,7 @@ export default function Home() {
         <div className="mt-16 flex justify-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm font-medium text-blue-700">
             <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-            Built on Base Network
+            {t('builtOnBase')}
           </div>
         </div>
       </div>

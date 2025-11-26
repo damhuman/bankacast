@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAccount, usePublicClient } from 'wagmi';
 import { formatUnits } from 'viem';
 import { ConnectAccount } from '@coinbase/onchainkit/wallet';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 const FACTORY_ADDRESS = process.env.NEXT_PUBLIC_FACTORY_ADDRESS as `0x${string}`;
 const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '84532');
@@ -114,6 +115,7 @@ interface Vault {
 }
 
 export default function ContributionsPage() {
+  const { t } = useLanguage();
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient({ chainId: CHAIN_ID });
   const [vaults, setVaults] = useState<Vault[]>([]);
@@ -293,17 +295,17 @@ export default function ContributionsPage() {
             className="inline-flex items-center gap-2 text-primary hover:text-blue-600 transition-colors font-medium group"
           >
             <span className="transition-transform group-hover:-translate-x-1">←</span>
-            <span>Back to home</span>
+            <span>{t('backToHome')}</span>
           </Link>
         </div>
 
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            My Contributions
+            {t('myContributions')}
           </h1>
           <p className="text-lg text-gray-600">
-            Vaults you've supported and their current progress
+            {t('contributionsDesc')}
           </p>
         </div>
 
@@ -311,8 +313,8 @@ export default function ContributionsPage() {
         {!isConnected && (
           <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
             <div className="text-6xl mb-6">🔐</div>
-            <p className="text-2xl font-bold text-gray-900 mb-3">Connect Your Wallet</p>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">Connect your wallet to see vaults you've contributed to</p>
+            <p className="text-2xl font-bold text-gray-900 mb-3">{t('connectWalletPrompt')}</p>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">{t('connectWalletDesc')}</p>
             <div className="flex justify-center">
               <ConnectAccount />
             </div>
@@ -323,7 +325,7 @@ export default function ContributionsPage() {
         {isConnected && loading && (
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-primary"></div>
-            <p className="mt-6 text-lg text-gray-600 font-medium">Loading your contributions...</p>
+            <p className="mt-6 text-lg text-gray-600 font-medium">{t('loadingBankas')}</p>
           </div>
         )}
 
@@ -333,7 +335,7 @@ export default function ContributionsPage() {
             <div className="flex items-start gap-3">
               <span className="text-2xl">⚠️</span>
               <div>
-                <p className="font-bold text-base">Error Loading Contributions</p>
+                <p className="font-bold text-base">{t('errorLoadingContributions')}</p>
                 <p className="text-sm mt-1 leading-relaxed">{error}</p>
               </div>
             </div>
@@ -344,13 +346,13 @@ export default function ContributionsPage() {
         {isConnected && !loading && !error && vaults.length === 0 && (
           <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
             <div className="text-6xl mb-6">💸</div>
-            <p className="text-2xl font-bold text-gray-900 mb-3">No contributions yet</p>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">Start supporting vaults and watch your contributions grow with yield!</p>
+            <p className="text-2xl font-bold text-gray-900 mb-3">{t('noContributionsYet')}</p>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">{t('noContributionsDesc')}</p>
             <Link
               href="/discover"
               className="inline-block bg-primary text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
             >
-              Discover Vaults
+              {t('discoverBankas')}
             </Link>
           </div>
         )}
@@ -361,8 +363,8 @@ export default function ContributionsPage() {
             <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 font-medium">Total Contributions</p>
-                  <p className="text-2xl font-bold text-gray-900">{vaults.length} {vaults.length === 1 ? 'Vault' : 'Vaults'}</p>
+                  <p className="text-sm text-gray-600 font-medium">{t('totalContributions')}</p>
+                  <p className="text-2xl font-bold text-gray-900">{vaults.length} {t('bankas')}</p>
                 </div>
                 <div className="text-4xl">🎯</div>
               </div>
@@ -399,20 +401,20 @@ export default function ContributionsPage() {
 
                     {/* My Contribution highlight */}
                     <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-4 mb-4">
-                      <p className="text-xs text-purple-700 font-semibold mb-1">Your Contribution</p>
+                      <p className="text-xs text-purple-700 font-semibold mb-1">{t('yourContribution')}</p>
                       <p className="text-2xl font-bold text-purple-900">
                         {vault.tokenSymbol === 'USDC' && '$'}
                         {formatAmount(vault.myContribution, vault.decimals)} {vault.tokenSymbol}
                       </p>
                       <p className="text-xs text-purple-600 mt-1">
-                        {myShare.toFixed(1)}% of total raised
+                        {myShare.toFixed(1)}% {t('ofTotal')}
                       </p>
                     </div>
 
                     {/* Progress bar */}
                     <div className="mb-5">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600 font-medium">Total Progress</span>
+                        <span className="text-gray-600 font-medium">{t('totalProgress')}</span>
                         <span className="font-bold text-primary">{vault.progress.toFixed(1)}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -428,7 +430,7 @@ export default function ContributionsPage() {
                       <div className="flex justify-between text-sm items-center">
                         <span className="text-gray-600 flex items-center gap-1">
                           <span>💰</span>
-                          Total Raised
+                          {t('totalRaised')}
                         </span>
                         <span className="font-bold text-gray-900">
                           {formatAmount(vault.totalContributed, vault.decimals)} / {formatAmount(vault.goalAmount, vault.decimals)}
@@ -437,7 +439,7 @@ export default function ContributionsPage() {
                       <div className="flex justify-between text-sm items-center">
                         <span className="text-gray-600 flex items-center gap-1">
                           <span>📈</span>
-                          Yield Earned
+                          {t('yieldEarned')}
                         </span>
                         <span className="font-bold text-green-600">
                           +{formatAmount(vault.yieldEarned, vault.decimals)} {vault.tokenSymbol}
@@ -446,7 +448,7 @@ export default function ContributionsPage() {
                       <div className="flex justify-between text-sm items-center">
                         <span className="text-gray-600 flex items-center gap-1">
                           <span>💹</span>
-                          Aave APY
+                          {t('aaveAPY')}
                         </span>
                         <span className="font-bold text-blue-600">
                           {vault.apy > 0n ? `${formatAPY(vault.apy)}%` : 'N/A'}
@@ -457,13 +459,13 @@ export default function ContributionsPage() {
                     {/* Status badges */}
                     {goalReached && !isCompleted && (
                       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 text-sm px-4 py-2 rounded-xl mb-4 font-semibold text-center">
-                        ✅ Goal Reached!
+                        ✅ {t('goalReached')}
                       </div>
                     )}
 
                     {isCompleted && (
                       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-800 text-sm px-4 py-2 rounded-xl mb-4 font-semibold text-center">
-                        🎉 Completed
+                        🎉 {t('completed')}
                       </div>
                     )}
 
@@ -472,7 +474,7 @@ export default function ContributionsPage() {
                       href={`/vault/${vault.address}`}
                       className="block w-full bg-primary text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all duration-200 text-center shadow-md hover:shadow-lg hover:scale-105"
                     >
-                      View Details
+                      {t('viewDetails')}
                     </Link>
                   </div>
                 );
