@@ -12,6 +12,7 @@
     "name": "Banka",
     "homeUrl": "https://bankacast.netlify.app",
     "iconUrl": "https://bankacast.netlify.app/icon.png",
+    "imageUrl": "https://bankacast.netlify.app/splash.png",
     "splashImageUrl": "https://bankacast.netlify.app/splash.png",
     "splashBackgroundColor": "#4F46E5",
     "primaryCategory": "finance",
