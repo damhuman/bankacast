@@ -86,10 +86,25 @@ export const metadata: Metadata = {
     },
   },
 
-  // Farcaster Mini App embed
+  // Farcaster Frame and Mini App
   other: {
+    // Frame meta tags for interactive cast
+    'fc:frame': 'vNext',
+    'fc:frame:image': 'https://bankacast.netlify.app/splash.png',
+    'fc:frame:image:aspect_ratio': '1:1',
+    'fc:frame:button:1': '🚀 Open Banka',
+    'fc:frame:button:1:action': 'link',
+    'fc:frame:button:1:target': 'https://bankacast.netlify.app',
+    'fc:frame:button:2': '💰 Create Vault',
+    'fc:frame:button:2:action': 'link',
+    'fc:frame:button:2:target': 'https://bankacast.netlify.app/create',
+    'fc:frame:button:3': '🔍 Discover',
+    'fc:frame:button:3:action': 'link',
+    'fc:frame:button:3:target': 'https://bankacast.netlify.app/discover',
+    'fc:frame:post_url': 'https://bankacast.netlify.app/api/frame-action',
+
+    // Mini App embed
     'fc:miniapp': miniAppEmbed,
-    'fc:frame': miniAppEmbed,
   },
 }
 
