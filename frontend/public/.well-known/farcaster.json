@@ -1,8 +1,8 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhFQzVENTcyRDcxNzE0MTQzOTIzODQ0QjIzQjY3QzBGODUzNDJCNkU3MCJ9",
-    "payload": "eyJkb21haW4iOiJiYW5rYWNhc3QubmV0bGlmeS5hcHAifQ==",
-    "signature": "MHhiYTM0ZjA2ZGQ3NmUxOGVlOGI4YzE5MjYzNWQ0YzVhNjJmYzBjOTBhY2NkNWFkODQ5YjcxODMwMTJiYzQ2YzFiNGMxNjk0ZjdhMjkyYTVhYjhmNjc5YmVhYmE4YmQ1MWI2MDE2ODViZGE3ZWRhMmRlMDEwNDE1YWRhNDJhZTBiNjFi"
+    "header": "eyJmaWQiOjE0Nzg0NzksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhDODE2NDk0NjZhQkRjRDU4MUZBOTE0NGMzMzhCQjA0QzcxQjkyRTEyIn0",
+    "payload": "eyJkb21haW4iOiJiYW5rYWNhc3QubmV0bGlmeS5hcHAifQ",
+    "signature": "wqfSmST1jektlzKYyBzdarLKhMnX192yLPHH2qw8NiBHsCuXObIcjfYCNzvkBc7XpBgwf+PL9N/55zSgI8ZyARs="
   },
   "baseBuilder": {
     "ownerAddress": "0xEC5D572D71714143923844B23B67C0F85342B6E70"
