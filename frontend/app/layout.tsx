@@ -8,6 +8,18 @@ import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const miniAppEmbed = JSON.stringify({
+  version: "1",
+  imageUrl: "https://bankacast.netlify.app/splash.png",
+  button: {
+    title: "Open Banka",
+    action: {
+      type: "launch_miniapp",
+      url: "https://bankacast.netlify.app"
+    }
+  }
+});
+
 export const metadata: Metadata = {
   title: 'Banka - Social Savings Vaults on Base',
   description: 'Create savings vaults, share on Farcaster, and earn yield automatically via Aave V3. Support friends, fundraise for causes, or save for goals together.',
@@ -26,7 +38,7 @@ export const metadata: Metadata = {
     siteName: 'Banka',
     images: [
       {
-        url: '/splash.png',
+        url: 'https://bankacast.netlify.app/splash.png',
         width: 512,
         height: 512,
         alt: 'Banka - Social Savings Vaults',
@@ -39,7 +51,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Banka - Social Savings Vaults on Base',
     description: 'Create savings vaults, share on Farcaster, and earn yield automatically via Aave V3',
-    images: ['/splash.png'],
+    images: ['https://bankacast.netlify.app/splash.png'],
     creator: '@banka_fun',
   },
 
@@ -73,6 +85,12 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+
+  // Farcaster Mini App embed
+  other: {
+    'fc:miniapp': miniAppEmbed,
+    'fc:frame': miniAppEmbed,
+  },
 }
 
 export default function RootLayout({
@@ -80,24 +98,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const miniAppEmbed = {
-    version: "1",
-    imageUrl: "https://bankacast.netlify.app/splash.png",
-    button: {
-      title: "Open Banka",
-      action: {
-        type: "launch_miniapp",
-        url: "https://bankacast.netlify.app"
-      }
-    }
-  };
-
   return (
     <html lang="en">
       <head>
         <link rel="farcaster-manifest" href="/farcaster-manifest.json" />
-        <meta name="fc:miniapp" content={JSON.stringify(miniAppEmbed)} />
-        <meta name="fc:frame" content={JSON.stringify(miniAppEmbed)} />
       </head>
       <body className={inter.className}>
         <LanguageProvider>
