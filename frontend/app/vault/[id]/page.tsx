@@ -383,14 +383,67 @@ export default function VaultPage({ params }: { params: { id: string } }) {
         <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-6">
           {/* Title & Description */}
           <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <h1 className="text-3xl font-bold">{vault.title}</h1>
-              <span className="text-2xl">{getTokenIcon(vault.tokenSymbol)}</span>
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex items-center gap-2 flex-1">
+                <h1 className="text-3xl font-bold">{vault.title}</h1>
+                <span className="text-2xl">{getTokenIcon(vault.tokenSymbol)}</span>
+              </div>
+
+              {/* Share Frame Buttons */}
+              <div className="flex gap-2 flex-shrink-0">
+                {/* Direct Farcaster Share (if available) */}
+                {typeof window !== 'undefined' && (window as any).farcaster && (
+                  <button
+                    onClick={() => {
+                      const frameUrl = `${window.location.origin}/api/frame?vault=${vault.address}`;
+                      const text = `Help me reach my goal! 💰\n\n${vault.title}\n\nContribute directly from this cast 👇`;
+                      (window as any).farcaster.actions.openComposer({
+                        text: `${text}\n\n${frameUrl}`,
+                      });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center gap-2"
+                    title="Share directly on Farcaster"
+                  >
+                    <span>📱</span>
+                    <span className="hidden sm:inline">Cast</span>
+                  </button>
+                )}
+
+                {/* Copy Frame URL */}
+                <button
+                  onClick={() => {
+                    const frameUrl = `${window.location.origin}/api/frame?vault=${vault.address}`;
+                    navigator.clipboard.writeText(frameUrl);
+                    alert('✅ Frame URL copied! Paste this in Farcaster to create an interactive donation post.');
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center gap-2"
+                  title="Copy Frame URL to clipboard"
+                >
+                  <span>🔗</span>
+                  <span className="hidden sm:inline">Copy Frame</span>
+                </button>
+              </div>
             </div>
             {vault.description && (
               <p className="text-gray-600 mb-4">{vault.description}</p>
             )}
             <p className="text-xs text-gray-500 font-mono break-all">{vault.address}</p>
+
+            {/* Frame URL Info Box */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-4 mt-4">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl flex-shrink-0">📱</span>
+                <div className="flex-1">
+                  <p className="font-bold text-purple-900 mb-1">Share Interactive Frame</p>
+                  <p className="text-sm text-purple-700 mb-2">
+                    Copy the URL below and post it on Farcaster to create an interactive donation frame with buttons!
+                  </p>
+                  <div className="bg-white rounded-lg p-3 font-mono text-xs break-all text-purple-900 border border-purple-200">
+                    {typeof window !== 'undefined' && `${window.location.origin}/api/frame?vault=${vault.address}`}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Beneficiary Badge - Show if beneficiary is different from creator */}
             {vault.beneficiary.toLowerCase() !== vault.creator.toLowerCase() && (
