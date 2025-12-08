@@ -101,7 +101,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="farcaster-manifest" href="/farcaster-manifest.json" />
+        <link rel="farcaster-manifest" href="/.well-known/farcaster.json" />
       </head>
       <body className={inter.className}>
         <LanguageProvider>

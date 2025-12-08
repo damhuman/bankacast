@@ -11,3 +11,9 @@
 
 [functions]
   directory = ".netlify/functions"
+
+[[redirects]]
+  from = "/.well-known/farcaster.json"
+  to = "https://api.farcaster.xyz/miniapps/hosted-manifest/019afdcd-b314-e322-19de-c9f663ad8c06"
+  status = 307
+  force = true
